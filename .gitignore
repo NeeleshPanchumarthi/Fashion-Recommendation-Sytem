@@ -1,0 +1,48 @@
+# Python & virtual environment
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+*.wheel
+
+# Virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# Environment variables and secrets
+.env
+
+# Data files (large and generated)
+/data/
+*.parquet
+*.csv
+*.jsonl
+
+# Logs and caches
+*.log
+*.sqlite
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# VS Code settings
+.vscode/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+build/
+*.egg
+.dist/
+
+# Pytest cache
+.pytest_cache/
+
+# Miscellaneous
+*.sql
