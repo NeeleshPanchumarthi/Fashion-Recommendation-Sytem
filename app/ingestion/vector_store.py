@@ -1,69 +1,237 @@
-"""Pinecone vector‑store helper.
-
-Initialises the Pinecone client using the API key and environment from
-``Settings`` and provides a simple ``upsert_vectors`` function that receives a
-DataFrame with the enriched product records.
-"""
+"""Pinecone vector-store helper."""
 
 from typing import Iterable
+import json
+
 import pandas as pd
+import numpy as np
 from pinecone import Pinecone, ServerlessSpec
-from ..config.settings import Settings
-from .embedding import embed_text
+
+from app.config.settings import Settings
+
+from .embedding import (
+    embed_text,
+    get_embedding_dimension,
+)
+
 
 _settings = Settings()
 
-# Initialise Pinecone once
-pc = Pinecone(api_key=_settings.PINECONE_API_KEY)
+if not _settings.PINECONE_API_KEY:
+    raise ValueError(
+        "PINECONE_API_KEY is not configured."
+    )
+
+pc = Pinecone(
+    api_key=_settings.PINECONE_API_KEY
+)
+
 
 def _get_index():
-    """Return the Pinecone index instance, creating it if it does not exist."""
-    existing_indexes = pc.list_indexes().names()
-    if _settings.PINECONE_INDEX not in existing_indexes:
-        # all-MiniLM-L6-v2 produces 384-dimensional vectors
+    """Return the Pinecone index, creating it if necessary."""
+
+    index_name = _settings.PINECONE_INDEX
+
+    try:
+        existing_indexes = pc.list_indexes().names()
+    except Exception as exc:
+        logger.warning("Pinecone unavailable or API key missing: %s", exc)
+        return None
+
+    if index_name not in existing_indexes:
+
+        dimension = get_embedding_dimension()
+
+        print(
+            f"Creating Pinecone index "
+            f"'{index_name}' "
+            f"with dimension {dimension}"
+        )
+
         pc.create_index(
-            name=_settings.PINECONE_INDEX,
-            dimension=384,
+            name=index_name,
+            dimension=dimension,
             metric="cosine",
             spec=ServerlessSpec(
-                cloud="gcp",
-                region=_settings.PINECONE_ENVIRONMENT.replace("-gcp", "") if "-gcp" in _settings.PINECONE_ENVIRONMENT else _settings.PINECONE_ENVIRONMENT
-            )
+                cloud="aws",
+                region=_settings.PINECONE_ENVIRONMENT,
+            ),
         )
-    return pc.Index(_settings.PINECONE_INDEX)
 
-def upsert_vectors(df: pd.DataFrame, id_column: str = "asin") -> None:
-    """Upsert product vectors into Pinecone.
+    return pc.Index(index_name)
 
-    The DataFrame must contain a column with a unique identifier (default ``asin``)
-    and a column called ``combined_text`` that holds the full text we want to
-    embed. Any additional columns are stored as metadata.
-    """
+
+def upsert_vectors(
+    df: pd.DataFrame,
+    id_column: str = "parent_asin",
+) -> None:
+    """Generate embeddings and upsert products to Pinecone."""
+
+    if id_column not in df.columns:
+        raise ValueError(
+            f"Missing vector ID column: {id_column}"
+        )
+
+    if "combined_text" not in df.columns:
+        raise ValueError(
+            "DataFrame must contain 'combined_text'"
+        )
+
     index = _get_index()
-    # Build the list of points in the format Pinecone expects.
-    points = []
+    if index is None:
+        logger.info("Pinecone unavailable; skipping vector upsert.")
+        return
+
+    vectors = []
+
     for _, row in df.iterrows():
-        text = str(row.get("combined_text", ""))
+
+        product_id = row.get(id_column)
+
+        if product_id is None:
+            continue
+
+        try:
+            if pd.isna(product_id):
+                continue
+        except (TypeError, ValueError):
+            pass
+
+        text = row.get(
+            "combined_text",
+            "",
+        )
+
+        if text is None:
+            continue
+
+        text = str(text).strip()
+
         if not text:
             continue
+
         vector = embed_text(text)
-        metadata = {k: v for k, v in row.to_dict().items() if k != id_column and k != "combined_text"}
-        points.append((str(row[id_column]), vector, metadata))
-    # Pinecone accepts a batch upsert of up to 100 vectors per call – we batch for safety.
+
+        if not vector:
+            continue
+
+        metadata = {}
+
+        for key, value in row.to_dict().items():
+
+            if key in {
+                id_column,
+                "combined_text",
+            }:
+                continue
+
+            if value is None:
+                continue
+
+            try:
+                if pd.isna(value):
+                    continue
+            except (TypeError, ValueError):
+                pass
+
+            if isinstance(value, (list, tuple)):
+                # Pinecone only allows lists of primitives (str/int/float/bool).
+                # If the list contains anything complex (e.g. dicts), serialise the whole thing to a JSON string.
+                if all(isinstance(v, (str, int, float, bool)) for v in value):
+                    metadata[key] = list(value)
+                else:
+                    metadata[key] = json.dumps(value, default=str)
+
+            elif isinstance(value, dict):
+                metadata[key] = json.dumps(value, default=str)
+
+            elif isinstance(value, (np.ndarray, pd.Series)):
+                # Convert numpy/pandas arrays to plain Python objects.
+                converted = value.tolist()
+                if all(isinstance(v, (str, int, float, bool)) for v in converted):
+                    metadata[key] = converted
+                else:
+                    metadata[key] = json.dumps(converted, default=str)
+
+            elif hasattr(value, "item"):
+                # Scalar numpy types (e.g. np.float32)
+                metadata[key] = value.item()
+
+            else:
+                metadata[key] = value
+
+        vectors.append(
+            {
+                "id": str(product_id),
+                "values": vector,
+                "metadata": metadata,
+            }
+        )
+
+    if not vectors:
+        print(
+            "No valid vectors generated."
+        )
+        return
+
     batch_size = 100
-    for i in range(0, len(points), batch_size):
-        batch = points[i : i + batch_size]
-        ids, vectors, metas = zip(*batch)
-        index.upsert(vectors=list(vectors), ids=list(ids), payloads=list(metas))
+    total = len(vectors)
 
-def query_vector(vector: list[float], top_k: int = None) -> Iterable[dict]:
-    """Search the Pinecone index with a pre‑computed vector.
+    print(
+        f"Upserting {total:,} vectors to Pinecone..."
+    )
 
-    Returns an iterable of match dictionaries (id, score, metadata).
-    """
+    for start in range(
+        0,
+        total,
+        batch_size,
+    ):
+
+        batch = vectors[
+            start:start + batch_size
+        ]
+
+        index.upsert(
+            vectors=batch
+        )
+
+        uploaded = min(
+            start + batch_size,
+            total,
+        )
+
+        print(
+            f"Uploaded "
+            f"{uploaded:,}/{total:,}"
+        )
+
+    print(
+        f"Successfully upserted "
+        f"{total:,} vectors to Pinecone"
+    )
+
+
+def query_vector(
+    vector: list[float],
+    top_k: int = None,
+) -> Iterable[dict]:
+    """Query Pinecone using an embedding vector."""
+
     if top_k is None:
         top_k = _settings.TOP_K
+
     index = _get_index()
-    results = index.query(vector=vector, top_k=top_k, include_metadata=True)
+
+    results = index.query(
+        vector=vector,
+        top_k=top_k,
+        include_metadata=True,
+    )
+
     for match in results.matches:
-        yield {"id": match.id, "score": match.score, "metadata": match.metadata}
+
+        yield {
+            "id": match.id,
+            "score": match.score,
+            "metadata": match.metadata,
+        }

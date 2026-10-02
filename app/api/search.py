@@ -30,7 +30,7 @@ async def search(request: QueryRequest):
             gender=meta.get("gender"),
             color=meta.get("color"),
             style=[style_str] if style_str else None,
-            image_url=meta.get("image_url"),
+            image_url=meta.get("images"),
             average_rating=meta.get("average_rating"),
             rating_number=meta.get("rating_number"),
             review_highlights=meta.get("overall_sentiment"),
