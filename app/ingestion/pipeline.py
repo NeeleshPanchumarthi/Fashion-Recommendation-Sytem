@@ -11,10 +11,7 @@ from typing import Optional, Tuple
 import pandas as pd
 
 from .data_loader import load_dataset
-from .review_processor import (
-    process_reviews,
-    aggregate_product_sentiment,
-)
+from .review_processor import process_all_reviews
 from .attributes.color_extractor import extract_color
 from .attributes.gender_extractor import extract_gender
 from .attributes.size_extractor import extract_size
@@ -152,33 +149,40 @@ def build_pipeline(
     )
 
     # ---------------------------------------------------------
-    # 2. Sentiment
+    # 2. Review processing:
+    #    score → bucket → top-K → local BERT sentiment
+    #    → review_highlights (60/20/20) + overall_sentiment
     # ---------------------------------------------------------
 
-    logger.info("Processing review sentiment...")
+    logger.info("Processing reviews (bucketed selection + local sentiment) …")
 
-    rev_with_sentiment = process_reviews(
+    rev_with_sentiment, highlights_df, sentiment_df = process_all_reviews(
         rev_df,
         limit=limit_reviews,
     )
 
-    product_sentiment = aggregate_product_sentiment(
-        rev_with_sentiment
-    )
-
     # ---------------------------------------------------------
-    # 3. Merge sentiment
+    # 3. Merge review_highlights and overall_sentiment
     # ---------------------------------------------------------
 
     meta_df = meta_df.merge(
-        product_sentiment,
+        sentiment_df,   # columns: parent_asin, overall_sentiment
         on="parent_asin",
         how="left",
     )
 
+    meta_df = meta_df.merge(
+        highlights_df,  # columns: parent_asin, review_highlights
+        on="parent_asin",
+        how="left",
+    )
+
+    # Fill products with no reviews
     meta_df["overall_sentiment"] = (
-        meta_df["overall_sentiment"]
-        .fillna("neutral")
+        meta_df["overall_sentiment"].fillna("neutral")
+    )
+    meta_df["review_highlights"] = meta_df["review_highlights"].apply(
+        lambda v: v if isinstance(v, list) else []
     )
 
     # ---------------------------------------------------------
@@ -188,6 +192,15 @@ def build_pipeline(
     logger.info("Extracting product attributes...")
 
     meta_df = _apply_attribute_extractors(meta_df)
+
+    # Fill optional attribute fields with explicit "not specified" / defaults
+    meta_df["gender"] = meta_df["gender"].fillna("not specified")
+    meta_df["color"] = meta_df["color"].fillna("not mentioned")
+    meta_df["style"] = meta_df["style"].fillna("not specified")
+    meta_df["category"] = meta_df["category"].fillna("not distributed")
+    meta_df["description"] = meta_df.get(
+        "description", pd.Series("no description", index=meta_df.index)
+    ).fillna("no description")
 
     # ---------------------------------------------------------
     # 5. Combined text
@@ -201,7 +214,7 @@ def build_pipeline(
     )
 
     # ---------------------------------------------------------
-    # 6. Pinecone
+    # 6. Pinecone – upsert with full metadata
     # ---------------------------------------------------------
 
     logger.info(
@@ -234,7 +247,7 @@ if __name__ == "__main__":
 
     sample_rows_env = os.getenv(
         "SAMPLE_ROWS",
-        "100",
+        "1000",
     )
 
     if sample_rows_env.lower() == "all":
