@@ -1,11 +1,11 @@
 fastapi
 pydantic
+pydantic-settings
 # pandas>=2.2.3  # Temporarily disabled for test environment
 pyarrow>=18.0.0
 duckdb
 langchain
 langchain-community
-groq
 qdrant-client
 psycopg2-binary
 python-dotenv
@@ -14,3 +14,6 @@ pytest
 pinecone
 sentence-transformers
 httpx
+# Local sentiment model (nlptown/bert-base-multilingual-uncased-sentiment)
+transformers>=4.40.0
+torch>=2.0.0

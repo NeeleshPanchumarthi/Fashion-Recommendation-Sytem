@@ -84,6 +84,22 @@ def upsert_vectors(
 
     vectors = []
 
+    # Fields explicitly stored in Pinecone metadata.
+    # Only these columns are written; all others (combined_text, scoring
+    # intermediates, etc.) are excluded.
+    PINECONE_METADATA_FIELDS = {
+        "title",
+        "description",
+        "gender",
+        "color",
+        "style",
+        "category",
+        "average_rating",   # avg rating from product metadata
+        "images",           # image_url(s)
+        "review_highlights",
+        "overall_sentiment",
+    }
+
     for _, row in df.iterrows():
 
         product_id = row.get(id_column)
@@ -119,10 +135,12 @@ def upsert_vectors(
 
         for key, value in row.to_dict().items():
 
-            if key in {
-                id_column,
-                "combined_text",
-            }:
+            # Skip the vector ID column and the embedding source text
+            if key in {id_column, "combined_text"}:
+                continue
+
+            # Only store explicitly allowed metadata fields
+            if key not in PINECONE_METADATA_FIELDS:
                 continue
 
             if value is None:
@@ -136,7 +154,8 @@ def upsert_vectors(
 
             if isinstance(value, (list, tuple)):
                 # Pinecone only allows lists of primitives (str/int/float/bool).
-                # If the list contains anything complex (e.g. dicts), serialise the whole thing to a JSON string.
+                # review_highlights is list[str] so it passes through directly.
+                # images may be list[dict]; serialise those to JSON string.
                 if all(isinstance(v, (str, int, float, bool)) for v in value):
                     metadata[key] = list(value)
                 else:

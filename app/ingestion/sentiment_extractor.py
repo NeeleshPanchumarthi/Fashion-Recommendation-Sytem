@@ -1,104 +1,121 @@
-import httpx
+"""Local sentiment extractor using nlptown/bert-base-multilingual-uncased-sentiment.
 
-from app.config.settings import Settings
+The model outputs a star rating (1–5 stars). We map this to three labels:
+    1–2 stars  →  negative
+    3 stars    →  neutral
+    4–5 stars  →  positive
 
-_settings = Settings()
+The transformers pipeline is loaded once per process and cached as a
+module-level singleton so that repeated calls don't reload the weights.
+"""
 
-GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+from __future__ import annotations
+
+import logging
+from typing import List
+
+logger = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Model config
+# ---------------------------------------------------------------------------
+
+SENTIMENT_MODEL = "nlptown/bert-base-multilingual-uncased-sentiment"
+
+# Pinecone / transformers-pipeline batch size (tune to GPU/CPU memory)
+_BATCH_SIZE = 32
+
+# Module-level singleton – populated on first call to _get_pipeline()
+_pipeline = None
+
+
+def _get_pipeline():
+    """Lazily load and cache the transformers sentiment pipeline."""
+    global _pipeline
+    if _pipeline is None:
+        try:
+            from transformers import pipeline as hf_pipeline
+            logger.info("Loading local sentiment model: %s …", SENTIMENT_MODEL)
+            _pipeline = hf_pipeline(
+                "text-classification",
+                model=SENTIMENT_MODEL,
+                tokenizer=SENTIMENT_MODEL,
+                truncation=True,
+                max_length=512,
+                batch_size=_BATCH_SIZE,
+                top_k=1,          # return only the top label per input
+            )
+            logger.info("Sentiment model loaded successfully.")
+        except Exception as exc:
+            logger.error("Failed to load sentiment model: %s", exc)
+            raise
+    return _pipeline
+
+
+# ---------------------------------------------------------------------------
+# Star-label → sentiment mapping
+# ---------------------------------------------------------------------------
+
+def _star_label_to_sentiment(label: str) -> str:
+    """Map model output label (e.g. '4 stars') to positive/neutral/negative."""
+    label = label.lower().strip()
+    # The model outputs labels like "1 star", "2 stars", "3 stars", etc.
+    for star_count in ("1", "2", "3", "4", "5"):
+        if star_count in label:
+            n = int(star_count)
+            if n <= 2:
+                return "negative"
+            elif n == 3:
+                return "neutral"
+            else:
+                return "positive"
+    # Fallback if label format changes
+    return "neutral"
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def classify_batch(texts: List[str]) -> List[str]:
+    """Classify a list of review texts and return sentiment labels.
+
+    Parameters
+    ----------
+    texts : list of raw review strings
+
+    Returns
+    -------
+    list of "positive" | "neutral" | "negative" (same order as input)
+    """
+    pipe = _get_pipeline()
+    sentiments: List[str] = []
+
+    # Process in batches; transformers pipeline handles its own batching
+    # but we chunk to surface progress logs.
+    total = len(texts)
+    for start in range(0, total, _BATCH_SIZE * 4):
+        chunk = texts[start: start + _BATCH_SIZE * 4]
+        try:
+            # Each result is a list-of-list when top_k=1
+            results = pipe(chunk)
+            for res in results:
+                # res is [{"label": "4 stars", "score": 0.9}]
+                label = res[0]["label"] if isinstance(res, list) else res["label"]
+                sentiments.append(_star_label_to_sentiment(label))
+        except Exception as exc:
+            logger.error("Batch sentiment error (chunk start=%d): %s", start, exc)
+            # Fall back to neutral for the whole chunk
+            sentiments.extend(["neutral"] * len(chunk))
+
+        logger.info("Sentiment: %d / %d reviews classified", len(sentiments), total)
+
+    return sentiments
 
 
 def extract_sentiment(text: str) -> str:
-    """
-    Extract sentiment from a product review using a Groq-hosted LLM.
-
-    Returns:
-        "positive"
-        "neutral"
-        "negative"
-
-    If the API request fails, the function returns "neutral"
-    so that one failed review does not stop the ingestion pipeline.
-    """
-
-    # Handle empty reviews
-    if text is None or not str(text).strip():
+    """Classify a single review text.  Convenience wrapper around classify_batch."""
+    if not text or not str(text).strip():
         return "neutral"
-
-    review = str(text).strip()
-
-    prompt = f"""
-Classify the sentiment of the following product review.
-
-You must return exactly ONE of these three labels:
-positive
-neutral
-negative
-
-Do not provide any explanation.
-
-Review:
-{review}
-""".strip()
-
-    payload = {
-        "model": _settings.GROQ_MODEL,
-        "messages": [
-            {
-                "role": "user",
-                "content": prompt,
-            }
-        ],
-        "temperature": 0,
-        "max_tokens": 5,
-    }
-
-    headers = {
-        "Authorization": f"Bearer {_settings.GROQ_API_KEY}",
-        "Content-Type": "application/json",
-    }
-
-    try:
-        response = httpx.post(
-            GROQ_URL,
-            json=payload,
-            headers=headers,
-            timeout=30,
-        )
-
-        # Print the actual Groq error instead of only showing "400 Bad Request"
-        if response.status_code != 200:
-            print(
-                f"Groq API error [{response.status_code}]: "
-                f"{response.text}"
-            )
-
-        response.raise_for_status()
-
-        data = response.json()
-
-        result = (
-            data["choices"][0]["message"]["content"]
-            .strip()
-            .lower()
-        )
-
-        # Normalize the model response
-        if "positive" in result:
-            return "positive"
-
-        if "negative" in result:
-            return "negative"
-
-        if "neutral" in result:
-            return "neutral"
-
-        # Unexpected model output
-        return "neutral"
-
-    except httpx.HTTPError as exc:
-        print(f"Groq HTTP error: {exc}")
-        return "neutral"
-
-    except (KeyError, IndexError, TypeError) as exc:
-        print(f"Unexpected Groq response: {exc}")
-        return "neutral"
+    results = classify_batch([str(text).strip()])
+    return results[0] if results else "neutral"
