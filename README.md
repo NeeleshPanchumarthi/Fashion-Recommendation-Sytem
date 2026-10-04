@@ -5,8 +5,8 @@ query ("I need a dress for a wedding") into ranked products using query
 understanding, vector retrieval over Pinecone and cross-encoder reranking.
 
 The service owns one business capability, **product search**, and the
-vector index that powers it. It runs as two processes from one codebase and
-one image:
+vector index that powers it. It runs as two separate processes from one
+codebase:
 
 | Process | Entry point | Lifecycle |
 |---|---|---|
@@ -83,17 +83,6 @@ RUN_LIVE_TESTS=1 pytest tests/integration/vector_db   # against the real index
 The worker reads `data/metadata.parquet` and `data/reviews.parquet` and
 checkpoints to `data/checkpoints/`. Only one batch of reviews is held in
 memory at a time.
-
-## Docker
-
-```bash
-docker build -t fashion-search .
-docker run --env-file .env -p 8000:8000 fashion-search
-
-# or with compose
-docker compose up --build                                   # API
-docker compose --profile ingestion run --rm worker --max-batches 2   # worker
-```
 
 ## Configuration
 
