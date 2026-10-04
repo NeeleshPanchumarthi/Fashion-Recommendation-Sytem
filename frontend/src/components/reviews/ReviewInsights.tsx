@@ -22,7 +22,7 @@ export function ReviewInsights({ product }: { product: SearchResult }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
-          <MessageSquareQuote className="size-4 text-violet-600" />
+          <MessageSquareQuote className="size-4 text-brand-600" />
           What customers say
         </CardTitle>
       </CardHeader>

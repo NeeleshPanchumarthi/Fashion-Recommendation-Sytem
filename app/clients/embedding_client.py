@@ -44,6 +44,13 @@ class EmbeddingClient:
     def warm(self) -> None:
         self._get_model()
 
+    def embed_many(self, texts: list[str]) -> list[list[float]]:
+        """Embed several texts in one batched forward pass."""
+        cleaned = [str(t or "").strip() for t in texts]
+        if not all(cleaned):
+            raise ValueError("Cannot generate embedding for empty text.")
+        return self._get_model().encode(cleaned, normalize_embeddings=True).tolist()
+
     def embed(self, text: str) -> list[float]:
         """Return a normalized embedding vector for non-empty text."""
         text = str(text or "").strip()

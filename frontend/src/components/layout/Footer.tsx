@@ -1,7 +1,21 @@
+import { BRAND_NAME, HERO_IMAGE } from "@/lib/brand"
+
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 py-8 text-center text-sm text-slate-400">
-      <p>Vogue AI &mdash; AI-powered fashion discovery, built on vector search.</p>
+    <footer className="bg-brand-900 text-brand-100">
+      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-8">
+        <div>
+          <p className="font-display text-3xl text-white">{BRAND_NAME.toLowerCase()}</p>
+          <p className="mt-1 text-sm text-brand-200">Describe the outfit you want. We'll find it.</p>
+        </div>
+        <p className="text-xs text-brand-200/70">
+          Hero photo by{" "}
+          <a href={HERO_IMAGE.creditUrl} target="_blank" rel="noreferrer" className="underline hover:text-white">
+            {HERO_IMAGE.credit}
+          </a>{" "}
+          on Unsplash
+        </p>
+      </div>
     </footer>
   )
 }

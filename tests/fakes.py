@@ -32,6 +32,9 @@ class FakeEmbedder:
         self.texts.append(text)
         return [float(len(text)), 0.0, 1.0]
 
+    def embed_many(self, texts: list[str]) -> list[list[float]]:
+        return [self.embed(t) for t in texts]
+
     def warm(self) -> None:
         pass
 
@@ -50,7 +53,7 @@ class FakeRerankerClient:
 
 class FakePineconeClient:
     """Stores vectors in memory and applies the subset of Pinecone's filter
-    syntax the repository emits (equality, $nin, $gte)."""
+    syntax the repository emits (equality, $in, $nin, $gte)."""
 
     def __init__(self, vectors: Optional[list[dict[str, Any]]] = None, fail_times: int = 0) -> None:
         self.vectors = {v["id"]: v for v in (vectors or [])}
@@ -70,6 +73,8 @@ class FakePineconeClient:
             value = metadata.get(key)
             if isinstance(cond, dict):
                 if "$nin" in cond and value in cond["$nin"]:
+                    return False
+                if "$in" in cond and value not in cond["$in"]:
                     return False
                 if "$gte" in cond and (value is None or value < cond["$gte"]):
                     return False

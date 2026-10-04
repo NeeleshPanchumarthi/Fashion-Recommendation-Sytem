@@ -53,9 +53,10 @@ class Settings(BaseSettings):
     WARM_MODELS_ON_STARTUP: bool = True
 
     # Retrieval
-    TOP_K: int = 10                  # results returned when the request doesn't say
-    DENSE_SEARCH_K: int = 50         # candidates pulled from Pinecone before reranking
-    RERANK_CANDIDATES_K: int = 30    # how many of those get cross-encoder reranked
+    TOP_K: int = 12                  # results returned when the request doesn't say
+    DENSE_SEARCH_K: int = 40         # Pinecone candidates per search (normal queries)
+    OUTFIT_DENSE_K: int = 10         # Pinecone candidates per search (outfit queries: one per group)
+    RERANK_CANDIDATES_K: int = 24    # total candidates cross-encoder reranked, split across searches
 
     # Ingestion worker
     METADATA_PATH: Path = PROJECT_ROOT / "data" / "metadata.parquet"

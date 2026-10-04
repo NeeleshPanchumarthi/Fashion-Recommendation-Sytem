@@ -1,23 +1,66 @@
 @import "tailwindcss";
 
-:root {
-  --background: 0 0% 100%;
-  --foreground: 240 10% 10%;
-  --muted: 240 5% 96%;
-  --muted-foreground: 240 4% 46%;
-  --border: 240 6% 90%;
-  --primary: 262 83% 58%;
-  --primary-foreground: 0 0% 100%;
-  --accent: 330 81% 60%;
-  --radius: 0.75rem;
+/* Design tokens: deep maroon brand on near-black and warm white. */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "DM Serif Display", ui-serif, Georgia, serif;
+  --font-script: "Playfair Display", ui-serif, Georgia, serif;
+
+  --color-brand-50: #fdf2f2;
+  --color-brand-100: #fbe4e4;
+  --color-brand-200: #f5c2c2;
+  --color-brand-500: #c0262a;
+  --color-brand-600: #a11519;
+  --color-brand-700: #870f13;
+  --color-brand-800: #6b0c0f;
+  --color-brand-900: #4d0709;
+
+  --color-ink: #0d0b0b;
+  --color-tile: #f4f3f1;
+
+  --animate-hero-zoom: hero-zoom 18s ease-out both;
+  --animate-rise: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-blur-in: blur-in 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-slide-in: slide-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  --animate-glow: glow 4s ease-in-out infinite;
 }
 
-* {
-  border-color: hsl(var(--border));
+@keyframes hero-zoom {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes blur-in {
+  from { opacity: 0; filter: blur(18px); transform: translateY(20px) scale(1.04); }
+  to { opacity: 1; filter: blur(var(--final-blur, 0px)); transform: none; }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes glow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  background-color: #ffffff;
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
 }

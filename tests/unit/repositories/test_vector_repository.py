@@ -77,3 +77,8 @@ def test_upsert_writes_in_batches():
     records = [(f"A{i}", [0.0], {"title": f"P{i}"}) for i in range(5)]
     assert VectorRepository(client, upsert_batch_size=2).upsert(records) == 5
     assert [len(b) for b in client.upsert_batches] == [2, 2, 1]
+
+
+def test_outfit_group_becomes_in_clause():
+    assert to_pinecone_filter(SearchFilters(categories=("shoes", "sneakers"))) == {"category": {"$in": ["shoes", "sneakers"]}}
+    assert to_pinecone_filter(SearchFilters(category="dress", categories=("shoes",))) == {"category": "dress"}

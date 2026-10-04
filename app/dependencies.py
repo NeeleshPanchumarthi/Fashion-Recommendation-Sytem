@@ -65,6 +65,7 @@ def build_container(settings: Settings) -> ServiceContainer:
         retriever=Retriever(vectors, dense_k=settings.DENSE_SEARCH_K),
         reranker=Reranker(reranker_client),
         rerank_candidates_k=settings.RERANK_CANDIDATES_K,
+        outfit_dense_k=settings.OUTFIT_DENSE_K,
     )
     return ServiceContainer(
         embedder=embedder,

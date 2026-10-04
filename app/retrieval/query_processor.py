@@ -34,6 +34,7 @@ from app.domain.attributes.gender_extractor import extract_gender
 from app.domain.attributes.size_extractor import extract_size
 from app.domain.attributes.style_extractor import extract_style
 from app.domain.attributes.vocabularies import CATEGORIES, COLORS, GENDERS, SIZES, STYLES
+from app.domain.outfit import is_outfit_query
 from app.domain.search import QueryUnderstanding, SearchFilters
 
 logger = logging.getLogger(__name__)
@@ -99,6 +100,22 @@ _RELATION_PATTERNS = {
 }
 
 
+# "for my husband", "my wife's" -- who it's for, not what it is. Only
+# possessive phrases, so "mother of the bride dress" is left alone.
+_RELATION_PHRASE = re.compile(
+    r"\s*\b(?:for\s+)?(?:my|his|her|our)\s+"
+    r"(?:wife|girlfriend|mom|mother|sister|husband|boyfriend|dad|father|brother)(?:'s)?\b",
+    re.IGNORECASE,
+)
+
+
+def strip_relation_phrases(text: str) -> str:
+    """Remove "for my husband"-style phrases from search text. They become a
+    gender filter; left in the text they pull in "gift for husband" items."""
+    stripped = re.sub(r"\s{2,}", " ", _RELATION_PHRASE.sub("", text)).strip()
+    return stripped or text
+
+
 def extract_query_gender(query: str) -> Optional[str]:
     """Explicit gender words first, then relationship cues. Ambiguous
     queries ("for him and her") resolve to None so both genders show."""
@@ -109,13 +126,25 @@ def extract_query_gender(query: str) -> Optional[str]:
     return hits[0] if len(hits) == 1 else None
 
 
+_DRESS_WORD = re.compile(r"\bdress(es)?\b", re.IGNORECASE)
+
+
+def extract_query_category(query: str) -> Optional[str]:
+    """Category for a query. "dress" next to another garment is a modifier
+    ("dress shirt", "dress pants", "dress shoes"), so the garment wins."""
+    category = extract_category(query)
+    if category == "dress":
+        return extract_category(_DRESS_WORD.sub(" ", query)) or category
+    return category
+
+
 def extract_filters_regex(query: str) -> dict:
     """Deterministic, zero-latency extraction using the SAME extractors used
     at ingestion -- authoritative whenever they find a match."""
     price_min, price_max = extract_price_range(query)
     return {
         "gender": extract_query_gender(query),
-        "category": extract_category(query),
+        "category": extract_query_category(query),
         "color": extract_color(query),
         "style": extract_style(query),
         "size": extract_size(query),
@@ -193,9 +222,13 @@ class QueryProcessor:
             else:
                 merged[key] = None
 
+        outfit = is_outfit_query(query, merged["category"])
+
         return QueryUnderstanding(
             filters=SearchFilters(**{key: merged[key] for key in FILTER_KEYS}),
-            expanded_query=llm.get("expanded_query") or query,
+            outfit=outfit,
+            expanded_query=strip_relation_phrases(llm.get("expanded_query") or query),
+            search_query=strip_relation_phrases(query),
             sources=sources,
             price_min=merged["price_min"],
             price_max=merged["price_max"],

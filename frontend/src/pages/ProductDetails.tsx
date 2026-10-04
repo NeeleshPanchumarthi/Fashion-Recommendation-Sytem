@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { useLocation, useParams, Link } from "react-router-dom"
-import { Shirt, ArrowLeft, Info } from "lucide-react"
+import { useLocation, useNavigate, useParams, Link } from "react-router-dom"
+import { ArrowLeft, Info } from "lucide-react"
 import { PageContainer } from "@/components/layout/PageContainer"
 import { Button } from "@/components/ui/button"
 import { ReviewInsights } from "@/components/reviews/ReviewInsights"
@@ -13,6 +13,7 @@ import type { SearchResult } from "@/types/api"
 export default function ProductDetails() {
   const { id } = useParams()
   const location = useLocation()
+  const navigate = useNavigate()
   const product = (location.state as { product?: SearchResult } | null)?.product
 
   const [similar, setSimilar] = useState<SearchResult[]>([])
@@ -46,43 +47,30 @@ export default function ProductDetails() {
   }
 
   return (
-    <PageContainer>
-      <Link to="/search" className="mb-6 inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700">
+    <PageContainer className="pt-6">
+      <button
+        onClick={() => navigate(-1)}
+        className="mb-6 inline-flex items-center gap-1.5 text-sm text-slate-500 transition-colors hover:text-brand-700"
+      >
         <ArrowLeft className="size-3.5" />
         Back to results
-      </Link>
+      </button>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <ImageCarousel
-          images={product.images}
-          alt={product.title}
-          aspect="aspect-square"
-          className="rounded-2xl border border-slate-100"
-        />
+      <div className="grid gap-10 lg:grid-cols-2">
+        <div className="animate-rise overflow-hidden rounded-3xl bg-tile">
+          <ImageCarousel images={product.images} alt={product.title} aspect="aspect-square" />
+        </div>
 
-        <div className="flex flex-col gap-4">
-          <h1 className="text-2xl font-semibold text-slate-900">{product.title}</h1>
-
+        <div className="animate-rise flex flex-col gap-5" style={{ animationDelay: "120ms" }}>
+          <h1 className="font-display text-3xl leading-tight text-ink sm:text-4xl">{product.title}</h1>
           {product.average_rating != null && <StarRating rating={product.average_rating} size="size-4" />}
-
-          <div className="flex gap-3 pt-2">
-            <Button asChild size="lg" className="flex-1">
-              <Link to="/try-on" state={{ product }}>
-                <Shirt className="size-4" />
-                Try On
-              </Link>
-            </Button>
-          </div>
+          <ReviewInsights product={product} />
         </div>
       </div>
 
-      <div className="mt-10 max-w-2xl">
-        <ReviewInsights product={product} />
-      </div>
-
-      {similar.length > 0 && (
-        <div className="mt-12">
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">Similar products</h2>
+      {(similarLoading || similar.length > 0) && (
+        <div className="mt-16">
+          <h2 className="mb-6 font-display text-3xl text-ink">You may also like</h2>
           <ProductGrid products={similar} loading={similarLoading} />
         </div>
       )}
