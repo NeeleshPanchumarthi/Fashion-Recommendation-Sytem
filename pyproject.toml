@@ -1,0 +1,15 @@
+[project]
+name = "fashion-search"
+version = "1.0.0"
+description = "Semantic fashion product search microservice (FastAPI API + offline ingestion worker)"
+requires-python = ">=3.11"
+# Dependencies are pinned in requirements.txt / requirements-dev.txt.
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+# Test files share basenames across folders (e.g. unit vs integration).
+addopts = "--import-mode=importlib"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
