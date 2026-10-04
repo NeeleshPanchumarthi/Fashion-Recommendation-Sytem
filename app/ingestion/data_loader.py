@@ -143,7 +143,8 @@ def _load_parquet_head(path: Path, nrows: int) -> pd.DataFrame:
             break
 
     if not batches:
-        return pd.DataFrame()
+        # Empty file: keep its columns so schema validation still sees them.
+        return parquet_file.schema_arrow.empty_table().to_pandas()
 
     table = batches[0] if len(batches) == 1 else __import__("pyarrow").concat_tables(batches)
 

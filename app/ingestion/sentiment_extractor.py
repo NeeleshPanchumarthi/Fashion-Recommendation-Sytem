@@ -7,6 +7,10 @@ The model outputs a star rating (1–5 stars). We map this to three labels:
 
 The transformers pipeline is loaded once per process and cached as a
 module-level singleton so that repeated calls don't reload the weights.
+
+Device selection is automatic: if a CUDA GPU is visible (e.g. on a Colab
+GPU runtime), the pipeline runs on it; otherwise it falls back to CPU
+exactly as before. This is detected once at load time, not per call.
 """
 
 from __future__ import annotations
@@ -15,6 +19,22 @@ import logging
 from typing import List
 
 logger = logging.getLogger(__name__)
+
+
+def _detect_device() -> int:
+    """Return the transformers pipeline device index: 0 for the first CUDA
+    GPU if one is available, -1 for CPU. Importing torch here (rather than
+    at module level) keeps this file loadable even in environments where
+    torch isn't installed yet / is being installed."""
+    try:
+        import torch
+        if torch.cuda.is_available():
+            name = torch.cuda.get_device_name(0)
+            logger.info("CUDA GPU detected: %s -- sentiment model will run on GPU", name)
+            return 0
+    except Exception as exc:
+        logger.info("No usable CUDA GPU (%s) -- sentiment model will run on CPU", exc)
+    return -1
 
 # ---------------------------------------------------------------------------
 # Model config
@@ -44,6 +64,7 @@ def _get_pipeline():
                 max_length=512,
                 batch_size=_BATCH_SIZE,
                 top_k=1,          # return only the top label per input
+                device=_detect_device(),
             )
             logger.info("Sentiment model loaded successfully.")
         except Exception as exc:
