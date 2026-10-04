@@ -1,32 +1,39 @@
 import { Link, NavLink } from "react-router-dom"
-import { Sparkles } from "lucide-react"
+import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { BRAND_NAME } from "@/lib/brand"
 
 const links = [
-  { to: "/", label: "Home" },
-  { to: "/search", label: "Search" },
-  { to: "/ai", label: "AI Features" },
+  { to: "/", label: "Home", end: true },
+  { to: "/search", label: "Shop", end: false },
 ]
 
-export function Navbar() {
+// Floating white pill, as in the reference design. `overlay` positions it
+// over the home hero; otherwise it sticks to the top of normal pages.
+export function Navbar({ overlay = false }: { overlay?: boolean }) {
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
-        <Link to="/" className="flex items-center gap-2 font-semibold text-slate-900">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-pink-500 text-white">
-            <Sparkles className="size-4" />
-          </span>
-          <span className="text-lg tracking-tight">Vogue AI</span>
-        </Link>
-        <nav className="flex items-center gap-1">
+    <header
+      className={cn(
+        "z-40 w-full px-4 sm:px-8",
+        overlay ? "absolute inset-x-0 top-0 pt-5 animate-rise" : "sticky top-0 bg-white/80 pt-4 pb-3 backdrop-blur-md"
+      )}
+    >
+      <div
+        className={cn(
+          "mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center rounded-full bg-white px-5 py-3 sm:px-7",
+          overlay ? "shadow-lg shadow-black/20" : "border border-slate-200"
+        )}
+      >
+        <nav className="flex items-center gap-1 sm:gap-4">
           {links.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
+              end={link.end}
               className={({ isActive }) =>
                 cn(
-                  "rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
-                  isActive ? "bg-violet-100 text-violet-700" : "text-slate-600 hover:bg-slate-100"
+                  "text-sm transition-colors",
+                  isActive ? "font-medium text-ink" : "text-neutral-500 hover:text-ink"
                 )
               }
             >
@@ -34,6 +41,20 @@ export function Navbar() {
             </NavLink>
           ))}
         </nav>
+
+        <Link to="/" className="font-display text-2xl tracking-tight text-brand-700 sm:text-[1.7rem]">
+          {BRAND_NAME.toLowerCase()}
+        </Link>
+
+        <div className="flex justify-end">
+          <Link
+            to="/search"
+            aria-label="Search"
+            className="rounded-full p-2 text-ink transition-colors hover:bg-slate-100"
+          >
+            <Search className="size-5" strokeWidth={1.6} />
+          </Link>
+        </div>
       </div>
     </header>
   )

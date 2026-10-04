@@ -1,60 +1,71 @@
 import { useNavigate } from "react-router-dom"
-import { SearchBar } from "@/components/search/SearchBar"
-import { ExampleQueries } from "@/components/search/ExampleQueries"
-import { PageContainer } from "@/components/layout/PageContainer"
-import { Sparkles, Zap, ShieldCheck } from "lucide-react"
+import { Navbar } from "@/components/layout/Navbar"
+import { HeroSearch } from "@/components/search/HeroSearch"
+import { BRAND_NAME, HERO_IMAGE } from "@/lib/brand"
 
-const FEATURES = [
-  { icon: Sparkles, title: "Natural language search", desc: "Describe what you want in plain English -- color, occasion, budget, fit." },
-  { icon: Zap, title: "Hybrid AI ranking", desc: "Dense vector retrieval plus cross-encoder reranking surfaces the best matches first." },
-  { icon: ShieldCheck, title: "Real review intelligence", desc: "Sentiment and highlights pulled from actual customer reviews, never fabricated." },
-]
+const HEADLINE = ["Find the Outfit", "for Every", "Occasion"]
+
+// Letters of the brand watermark that get the red accent (like the
+// reference design's accented middle letters).
+const ACCENT_LETTERS = new Set([2, 3])
 
 export default function Home() {
   const navigate = useNavigate()
-
-  const goSearch = (query: string) => {
-    if (!query.trim()) return
-    navigate(`/search?q=${encodeURIComponent(query)}`)
-  }
+  const goSearch = (query: string) => navigate(`/search?q=${encodeURIComponent(query)}`)
+  const letters = BRAND_NAME.toLowerCase().split("")
 
   return (
-    <div>
-      <section className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-pink-50 py-20">
-        <PageContainer className="flex flex-col items-center gap-6 text-center">
-          <Badge />
-          <h1 className="max-w-2xl text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
-            Find fashion with <span className="text-violet-600">AI-powered</span> search
-          </h1>
-          <p className="max-w-xl text-lg text-slate-500">
-            Describe what you're looking for, and let semantic search and review intelligence do
-            the rest.
+    <section className="relative isolate flex min-h-[640px] h-[100svh] flex-col overflow-hidden bg-ink text-white">
+      {/* Background figure, slowly settling in */}
+      <img
+        src={HERO_IMAGE.src}
+        alt=""
+        className="animate-hero-zoom absolute inset-0 -z-20 h-full w-full object-cover object-[65%_center]"
+      />
+      {/* Darken the left (headline) and bottom (watermark + search) */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-r from-ink/95 via-ink/55 to-ink/10" />
+      <div className="absolute inset-x-0 bottom-0 -z-10 h-2/3 bg-gradient-to-t from-ink via-ink/60 to-transparent" />
+      {/* Soft red glow, echoing the reference's neon light */}
+      <div className="animate-glow absolute -right-24 top-1/4 -z-10 size-[28rem] rounded-full bg-brand-600/40 blur-[120px]" />
+
+      <Navbar overlay />
+
+      <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 sm:px-10">
+        <h1 className="mt-[22vh] font-display text-5xl leading-[1.05] sm:text-6xl lg:text-7xl">
+          {HEADLINE.map((line, i) => (
+            <span key={line} className="animate-rise block" style={{ animationDelay: `${200 + i * 140}ms` }}>
+              {line}
+            </span>
+          ))}
+        </h1>
+        <p
+          className="animate-rise mt-5 max-w-md text-[15px] leading-relaxed text-white/70"
+          style={{ animationDelay: "650ms" }}
+        >
+          Describe what you have in mind — the occasion, colour or fit — and we'll match it with real
+          products and what customers say about them.
+        </p>
+
+        <div className="mt-auto flex flex-col gap-8 pb-10 lg:flex-row lg:items-end lg:justify-between">
+          {/* Brand watermark */}
+          <p
+            aria-hidden
+            className="select-none pb-[0.12em] pr-[0.1em] font-script text-[clamp(4.5rem,15vw,13rem)] font-medium italic leading-[0.85] tracking-tight"
+          >
+            {letters.map((letter, i) => (
+              <span
+                key={i}
+                className={`animate-blur-in inline-block ${ACCENT_LETTERS.has(i) ? "text-brand-600" : "text-white/90"}`}
+                style={{ animationDelay: `${300 + i * 90}ms`, ["--final-blur" as string]: "1.5px" }}
+              >
+                {letter}
+              </span>
+            ))}
           </p>
-          <div className="w-full max-w-2xl">
-            <SearchBar onSearch={goSearch} autoFocus />
-          </div>
-          <ExampleQueries onPick={goSearch} />
-        </PageContainer>
-      </section>
 
-      <PageContainer className="grid gap-6 py-16 sm:grid-cols-3">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="rounded-2xl border border-slate-200 bg-white p-6">
-            <f.icon className="mb-3 size-6 text-violet-600" />
-            <h3 className="mb-1 font-semibold text-slate-900">{f.title}</h3>
-            <p className="text-sm text-slate-500">{f.desc}</p>
-          </div>
-        ))}
-      </PageContainer>
-    </div>
-  )
-}
-
-function Badge() {
-  return (
-    <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-xs font-medium text-violet-700">
-      <Sparkles className="size-3" />
-      Powered by hybrid vector search
-    </span>
+          <HeroSearch onSearch={goSearch} />
+        </div>
+      </div>
+    </section>
   )
 }

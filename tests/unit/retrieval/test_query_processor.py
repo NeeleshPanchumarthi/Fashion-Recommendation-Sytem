@@ -39,3 +39,36 @@ def test_disabled_llm_is_not_called():
     llm = FakeLLM(enabled=False)
     QueryProcessor(llm).process("red skirt")
     assert llm.calls == []
+
+
+def test_general_clothing_words_make_an_outfit_query():
+    for query in ["outfit for a party", "wedding attire", "something to wear to college", "party wear"]:
+        result = QueryProcessor(FakeLLM(enabled=False)).process(query)
+        assert result.outfit, query
+        assert result.filters.category is None, query
+
+
+def test_named_garments_are_not_outfit_queries():
+    # "dress" is a garment (a one-piece), not a general word for clothes.
+    for query in ["black jeans for men", "party shirt", "red skirt", "outfit with jeans", "I need a dress for wedding"]:
+        assert not QueryProcessor(FakeLLM(enabled=False)).process(query).outfit, query
+
+
+def test_relation_phrases_become_a_filter_not_search_text():
+    from app.retrieval.query_processor import strip_relation_phrases
+
+    assert strip_relation_phrases("outfit for my husband for a party") == "outfit for a party"
+    assert strip_relation_phrases("dress for my wife") == "dress"
+    assert strip_relation_phrases("mother of the bride dress") == "mother of the bride dress"
+    assert strip_relation_phrases("for my wife") == "for my wife"  # nothing left -> keep original
+
+    result = QueryProcessor(FakeLLM(enabled=False)).process("outfit for my husband for a party")
+    assert result.filters.gender == "men"
+    assert result.search_query == result.expanded_query == "outfit for a party"
+
+
+def test_dress_as_a_modifier_keeps_the_real_garment():
+    for query, category in [("dress shirt", "shirt"), ("dress pants for office", "pants"), ("black dress shoes", "shoes")]:
+        result = QueryProcessor(FakeLLM(enabled=False)).process(query)
+        assert not result.outfit, query
+        assert result.filters.category == category, query

@@ -23,7 +23,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
 
   if (list.length === 0 || failed.size === list.length) {
     return (
-      <div className={cn(aspect, "flex items-center justify-center bg-slate-100 text-slate-300", className)}>
+      <div className={cn(aspect, "flex items-center justify-center bg-tile text-slate-300", className)}>
         <ImageOff className="size-10" />
       </div>
     )
@@ -51,7 +51,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
 
   return (
     <div
-      className={cn("group relative overflow-hidden bg-white", aspect, className)}
+      className={cn("group/carousel relative overflow-hidden bg-tile", aspect, className)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -60,14 +60,14 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {list.map((src, i) => (
-          <div key={src} className="flex h-full w-full shrink-0 items-center justify-center p-3">
+          <div key={src} className="flex h-full w-full shrink-0 items-center justify-center bg-tile p-6">
             {failed.has(i) ? (
               <ImageOff className="size-10 text-slate-300" />
             ) : (
               <img
                 src={src}
                 alt={`${alt} (image ${i + 1} of ${list.length})`}
-                className="max-h-full max-w-full object-contain"
+                className="max-h-full max-w-full object-contain mix-blend-multiply"
                 loading={i === 0 ? "eager" : "lazy"}
                 draggable={false}
                 onError={() => setFailed((prev) => new Set(prev).add(i))}
@@ -82,19 +82,19 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
           <button
             onClick={(e) => onArrow(e, -1)}
             aria-label="Previous image"
-            className="absolute left-1.5 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100"
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover/carousel:opacity-100"
           >
             <ChevronLeft className="size-4 text-slate-700" />
           </button>
           <button
             onClick={(e) => onArrow(e, 1)}
             aria-label="Next image"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover:opacity-100"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-1.5 shadow-md transition-opacity hover:bg-white md:opacity-0 md:group-hover/carousel:opacity-100"
           >
             <ChevronRight className="size-4 text-slate-700" />
           </button>
 
-          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-black/20 px-2 py-1">
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-ink/25 px-2 py-1">
             {list.map((_, i) => (
               <button
                 key={i}
@@ -106,7 +106,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
                 aria-label={`Show image ${i + 1}`}
                 className={cn(
                   "size-1.5 rounded-full transition-all",
-                  i === index ? "w-3 bg-white" : "bg-white/60"
+                  i === index ? "w-3 bg-brand-600" : "bg-white"
                 )}
               />
             ))}

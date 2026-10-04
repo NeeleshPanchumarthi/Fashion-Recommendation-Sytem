@@ -57,6 +57,8 @@ def to_pinecone_filter(filters: SearchFilters) -> Optional[dict]:
         clauses["gender"] = {"$nin": list(filters.exclude_genders)}
     if filters.category:
         clauses["category"] = filters.category
+    elif filters.categories:
+        clauses["category"] = {"$in": list(filters.categories)}
     if filters.color:
         clauses["color"] = filters.color
     if filters.style:
