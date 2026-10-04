@@ -2,10 +2,12 @@
 
 from typing import Iterable
 import json
+import logging
 
 import pandas as pd
 import numpy as np
 from pinecone import Pinecone, ServerlessSpec
+from pinecone.errors import PineconeConnectionError
 
 from app.config.settings import Settings
 
@@ -14,6 +16,7 @@ from .embedding import (
     get_embedding_dimension,
 )
 
+logger = logging.getLogger(__name__)
 
 _settings = Settings()
 
@@ -26,9 +29,25 @@ pc = Pinecone(
     api_key=_settings.PINECONE_API_KEY
 )
 
+# Connection resets during the TLS handshake (WinError 10054) happen on some
+# networks; a couple of quick retries usually get through.
+QUERY_CONNECT_ATTEMPTS = 3
+
+# Cached after the first successful lookup so each search makes one Pinecone
+# call (the query) instead of three (list + describe + query).
+_index = None
+
+
+class VectorStoreUnavailable(RuntimeError):
+    """Pinecone could not be reached or rejected the request."""
+
 
 def _get_index():
     """Return the Pinecone index, creating it if necessary."""
+
+    global _index
+    if _index is not None:
+        return _index
 
     index_name = _settings.PINECONE_INDEX
 
@@ -58,7 +77,11 @@ def _get_index():
             ),
         )
 
-    return pc.Index(index_name)
+    # v10+ requires host= to avoid the 'Malformed domain' 401 error
+    host = pc.describe_index(index_name).host
+    _index = pc.Index(host=host)
+    return _index
+
 
 
 def upsert_vectors(
@@ -93,8 +116,10 @@ def upsert_vectors(
         "gender",
         "color",
         "style",
+        "size",             # needed for query-time size filtering (search.py)
         "category",
         "average_rating",   # avg rating from product metadata
+        "rating_number",    # needed by search.py's SearchResult.rating_number
         "images",           # image_url(s)
         "review_highlights",
         "overall_sentiment",
@@ -152,10 +177,21 @@ def upsert_vectors(
             except (TypeError, ValueError):
                 pass
 
-            if isinstance(value, (list, tuple)):
-                # Pinecone only allows lists of primitives (str/int/float/bool).
-                # review_highlights is list[str] so it passes through directly.
-                # images may be list[dict]; serialise those to JSON string.
+            if key == "review_highlights":
+                # Always serialise as a JSON string so Pinecone receives a
+                # reliable scalar value regardless of the internal list type.
+                # The search layer can json.loads() it back when serving results.
+                if isinstance(value, (list, tuple)):
+                    metadata[key] = json.dumps(
+                        [str(v) for v in value],
+                        ensure_ascii=False,
+                    )
+                else:
+                    metadata[key] = str(value)
+
+            elif isinstance(value, (list, tuple)):
+                # Pinecone allows lists of primitives only.
+                # images may be list[dict]; serialise those to a JSON string.
                 if all(isinstance(v, (str, int, float, bool)) for v in value):
                     metadata[key] = list(value)
                 else:
@@ -165,7 +201,6 @@ def upsert_vectors(
                 metadata[key] = json.dumps(value, default=str)
 
             elif isinstance(value, (np.ndarray, pd.Series)):
-                # Convert numpy/pandas arrays to plain Python objects.
                 converted = value.tolist()
                 if all(isinstance(v, (str, int, float, bool)) for v in converted):
                     metadata[key] = converted
@@ -178,6 +213,15 @@ def upsert_vectors(
 
             else:
                 metadata[key] = value
+
+        # Debug: log review_highlights for the first product to confirm the
+        # field is populated before it reaches Pinecone.
+        if len(vectors) == 0 and "review_highlights" in metadata:
+            logger.info(
+                "Review highlights for %s: %s",
+                product_id,
+                metadata["review_highlights"],
+            )
 
         vectors.append(
             {
@@ -233,19 +277,42 @@ def upsert_vectors(
 def query_vector(
     vector: list[float],
     top_k: int = None,
+    filter: dict = None,
 ) -> Iterable[dict]:
-    """Query Pinecone using an embedding vector."""
+    """Query Pinecone using an embedding vector.
+
+    filter: optional Pinecone metadata filter dict (see
+    app/search/filtering.py build_pinecone_filter()). None means unfiltered,
+    same as before this parameter existed -- fully backward compatible.
+    """
 
     if top_k is None:
         top_k = _settings.TOP_K
 
     index = _get_index()
+    if index is None:
+        raise VectorStoreUnavailable(
+            "Could not connect to Pinecone (check PINECONE_API_KEY and your network)."
+        )
 
-    results = index.query(
-        vector=vector,
-        top_k=top_k,
-        include_metadata=True,
-    )
+    for attempt in range(QUERY_CONNECT_ATTEMPTS):
+        try:
+            results = index.query(
+                vector=vector,
+                top_k=top_k,
+                include_metadata=True,
+                filter=filter,
+            )
+            break
+        except PineconeConnectionError as exc:
+            logger.warning(
+                "Pinecone query connection failed (attempt %d/%d): %s",
+                attempt + 1, QUERY_CONNECT_ATTEMPTS, exc,
+            )
+            if attempt == QUERY_CONNECT_ATTEMPTS - 1:
+                raise VectorStoreUnavailable(
+                    "Could not reach Pinecone; the connection was reset. Please try again."
+                ) from exc
 
     for match in results.matches:
 

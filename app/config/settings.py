@@ -27,6 +27,11 @@ class Settings(BaseSettings):
     RERANK_TOP_K: int = 10
     RRF_K: int = 10
 
+    # Dense search + cross-encoder reranking (app/search/)
+    DENSE_SEARCH_K: int = 50        # candidates pulled from Pinecone before reranking
+    RERANK_CANDIDATES_K: int = 30   # how many of those get cross-encoder reranked
+    CROSS_ENCODER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
     model_config = SettingsConfigDict(
         env_file=os.path.abspath(
             os.path.join(
@@ -48,6 +53,9 @@ class Settings(BaseSettings):
             "TOP_K": self.TOP_K,
             "RERANK_TOP_K": self.RERANK_TOP_K,
             "RRF_K": self.RRF_K,
+            "DENSE_SEARCH_K": self.DENSE_SEARCH_K,
+            "RERANK_CANDIDATES_K": self.RERANK_CANDIDATES_K,
+            "CROSS_ENCODER_MODEL": self.CROSS_ENCODER_MODEL,
         }
 
         return f"Settings({safe})"

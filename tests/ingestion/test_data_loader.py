@@ -14,7 +14,7 @@ def test_load_valid_dataset(tmp_path):
         "title": ["Red Shirt", "Blue Jeans"],
         "average_rating": [4.5, 4.0],
         "rating_number": [10, 8],
-        "image_url": ["http://img1", "http://img2"],
+        "images": ["http://img1", "http://img2"],
     })
     meta_path = tmp_path / "meta.parquet"
     _write_parquet(meta, meta_path)
@@ -46,7 +46,7 @@ def test_missing_required_columns(tmp_path):
         "parent_asin": ["A1"],
         "average_rating": [4.5],
         "rating_number": [10],
-        "image_url": ["http://img1"],
+        "images": ["http://img1"],
     })
     meta_path = tmp_path / "meta.parquet"
     _write_parquet(meta, meta_path)
@@ -75,7 +75,7 @@ def test_orphan_reviews(tmp_path):
         "title": ["Red Shirt"],
         "average_rating": [4.5],
         "rating_number": [10],
-        "image_url": ["http://img1"],
+        "images": ["http://img1"],
     })
     meta_path = tmp_path / "meta.parquet"
     _write_parquet(meta, meta_path)
@@ -94,17 +94,51 @@ def test_orphan_reviews(tmp_path):
     rev_path = tmp_path / "reviews.parquet"
     _write_parquet(reviews, rev_path)
 
+    # The orphan check scans the full files, so it only runs when asked for.
     with pytest.raises(ValueError) as exc:
-        load_dataset(str(meta_path), str(rev_path))
+        load_dataset(str(meta_path), str(rev_path), validate=True, validate_relationship=True)
     assert "Orphan reviews detected" in str(exc.value)
+
+
+def test_orphan_reviews_not_checked_by_default(tmp_path):
+    meta = pd.DataFrame({
+        "parent_asin": ["A1"],
+        "title": ["Red Shirt"],
+        "average_rating": [4.5],
+        "rating_number": [10],
+        "images": ["http://img1"],
+    })
+    meta_path = tmp_path / "meta.parquet"
+    _write_parquet(meta, meta_path)
+
+    reviews = pd.DataFrame({
+        "asin": ["B1"],
+        "parent_asin": ["A2"],
+        "rating": [5],
+        "title": ["Great!"],
+        "text": ["Love it"],
+        "user_id": ["U1"],
+        "timestamp": ["2023-01-01"],
+        "verified_purchase": [True],
+    })
+    rev_path = tmp_path / "reviews.parquet"
+    _write_parquet(reviews, rev_path)
+
+    # Default sample mode skips the full relationship scan.
+    meta_df, rev_df = load_dataset(str(meta_path), str(rev_path))
+    assert len(meta_df) == 1
+    assert len(rev_df) == 1
 
 def test_empty_dataset(tmp_path):
     # Empty metadata and reviews files
     meta_path = tmp_path / "meta.parquet"
-    pd.DataFrame(columns=["parent_asin", "title", "average_rating", "rating_number", "image_url"]).to_parquet(meta_path)
+    pd.DataFrame(columns=["parent_asin", "title", "average_rating", "rating_number", "images"]).to_parquet(meta_path)
     rev_path = tmp_path / "reviews.parquet"
     pd.DataFrame(columns=["asin", "parent_asin", "rating", "title", "text", "user_id", "timestamp", "verified_purchase"]).to_parquet(rev_path)
 
     meta_df, rev_df = load_dataset(str(meta_path), str(rev_path))
     assert meta_df.empty
     assert rev_df.empty
+    # Empty files still keep their schema.
+    assert "parent_asin" in meta_df.columns
+    assert "parent_asin" in rev_df.columns
