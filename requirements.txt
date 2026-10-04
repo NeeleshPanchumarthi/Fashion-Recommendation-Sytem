@@ -1,19 +1,23 @@
-fastapi
-pydantic
-pydantic-settings
-# pandas>=2.2.3  # Temporarily disabled for test environment
-pyarrow>=18.0.0
-duckdb
-langchain
-langchain-community
-qdrant-client
-psycopg2-binary
-python-dotenv
-uvicorn[standard]
-pytest
-pinecone
-sentence-transformers
-httpx
-# Local sentiment model (nlptown/bert-base-multilingual-uncased-sentiment)
-transformers>=4.40.0
-torch>=2.0.0
+# Runtime dependencies for the API and the ingestion worker.
+# Pinned to the versions this service is tested with (Python 3.13).
+
+# API
+fastapi==0.142.2
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+pydantic-settings==2.15.0
+httpx==0.28.1
+
+# Vector database
+pinecone==10.0.0
+
+# Models: embeddings, cross-encoder reranking, review sentiment
+sentence-transformers==6.1.0
+transformers==5.18.0
+torch==2.14.1
+
+# Data processing (ingestion worker)
+pandas==3.0.6
+numpy==2.5.3
+pyarrow==25.0.1
+duckdb==1.5.6

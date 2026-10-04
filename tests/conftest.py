@@ -1,6 +1,6 @@
-import sys
 import os
-# Ensure the project root is on the import path so that `import app` works during tests.
-project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-if project_root not in sys.path:
-    sys.path.insert(0, project_root)
+
+# The API module builds Settings at import time, which requires a Pinecone
+# key. Tests never reach Pinecone (fakes are injected), so any value works;
+# a real key from .env is used instead when present.
+os.environ.setdefault("PINECONE_API_KEY", "test-key")

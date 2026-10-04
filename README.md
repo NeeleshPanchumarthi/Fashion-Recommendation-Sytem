@@ -1,44 +1,102 @@
-# Project Files Overview
+# Fashion Search Service
 
-The following files have been added (or created) as part of the **Fashion Rec** project, listed in the order they were introduced, together with a brief reason for each:
+A semantic fashion product search microservice. It turns a natural-language
+query ("I need a dress for a wedding") into ranked products using query
+understanding, vector retrieval over Pinecone and cross-encoder reranking.
 
-| Order | File | Why it was created |
-|------|------|--------------------|
-| 1 | `requirements.txt` | Lists all Python dependencies (FastAPI, Pinecone, Sentence‑Transformers, etc.) required to run the pipeline and API. |
-| 2 | `app/ingestion/pipeline.py` | Orchestrates the full ingestion flow – loads data, extracts attributes, processes sentiment, generates embeddings, and upserts vectors to Pinecone. |
-| 3 | `app/ingestion/vector_store.py` | Provides Pinecone helper functions (`_get_index`, `upsert_vectors`, `query_vector`) using the new `pinecone` SDK. |
-| 4 | `app/api/search.py` | FastAPI router exposing the **/search** endpoint that queries Pinecone and returns a typed `SearchResponseSchema`. |
-| 5 | `app/main.py` | FastAPI application entry‑point – mounts the search router and adds a health‑check endpoint. |
-| 6 | `generate_dummy_data.py` | Small utility script that creates a `data/` directory with dummy `metadata.parquet` and `reviews.parquet` files so the pipeline can run out‑of‑the‑box. |
+The service owns one business capability, **product search**, and the
+vector index that powers it. It runs as two processes from one codebase and
+one image:
 
----
+| Process | Entry point | Lifecycle |
+|---|---|---|
+| **API** | `uvicorn app.main:app` | Long-running, serves requests |
+| **Ingestion worker** | `python -m workers.ingestion_worker` | Offline batch job, resumable, fills the index |
 
-## How to Run the Project
+The React app in `frontend/` is a separate client of this API.
 
-1. **Activate the virtual environment**
-   ```powershell
-   .\.venv\Scripts\Activate.ps1
-   ```
-2. **Install dependencies** (if you haven’t already)
-   ```powershell
-   pip install -r requirements.txt
-   ```
-3. **Generate sample data** (optional but required for the first run)
-   ```powershell
-   python generate_dummy_data.py
-   ```
-   This creates `data/metadata.parquet` and `data/reviews.parquet`.
-4. **Run the ingestion pipeline** – this loads the data, extracts attributes, obtains LLM sentiment, embeds the texts and upserts them into Pinecone.
-   ```powershell
-   python -m app.ingestion.pipeline
-   ```
-5. **Start the FastAPI server**
-   ```powershell
-   uvicorn app.main:app --reload
-   ```
-   The API will be available at `http://127.0.0.1:8000`. You can test the search endpoint, e.g.:
-   ```bash
-   curl -X POST "http://127.0.0.1:8000/api/v1/search" -H "Content-Type: application/json" -d '{"query": "red t‑shirt"}'
-   ```
+## Architecture
 
-That’s it – you now have a fully‑functional ingestion pipeline and searchable API backed by Pinecone.
+```
+Client ─► FastAPI (app/main.py: request IDs, errors, CORS)
+            └─► api/v1 routers ─► services ─► retrieval ─► repositories ─► clients ─► Pinecone / Groq / models
+
+Dataset ─► workers/ingestion_worker ─► batch_processor ─► services ─► repositories ─► Pinecone
+```
+
+```
+app/
+  main.py            app factory, startup (model warm-up), middleware, error handling
+  dependencies.py    composition root: builds clients → repositories → services
+  api/               HTTP only: router.py, v1/health.py, v1/search.py
+  core/              config.py, logging.py, exceptions.py
+  schemas/           HTTP request/response contracts
+  domain/            Product, SearchFilters, image-selection rule, attribute vocabularies/extractors
+  services/          use cases: search, health/readiness, review analysis, product enrichment
+  retrieval/         query processing, retriever (gender pools, relaxation), reranker, pipeline
+  repositories/      vector_repository (Pinecone schema + filters), dataset_repository (parquet/DuckDB)
+  clients/           Pinecone, Groq LLM, embedding, cross-encoder and sentiment models
+workers/             ingestion_worker (CLI + loop), batch_processor, checkpoint_manager
+scripts/             convert_dataset, check_pinecone, generate_sample_data
+tests/unit/          fast tests with in-memory fakes (no network)
+tests/integration/   API over HTTP, worker end-to-end, live Pinecone (opt-in)
+```
+
+## API
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/api/v1/health` | Liveness: process is up |
+| GET | `/api/v1/ready` | Readiness: models loaded, Pinecone reachable (503 if not) |
+| POST | `/api/v1/search` | `{"query": "...", "top_k": 10}` → ranked products |
+
+Errors return `{"detail", "code", "request_id"}`: 400 invalid request,
+422 validation error, 503 dependency unavailable, 500 internal error. Every
+response has an `X-Request-ID` header, which also appears in the logs.
+
+## Setup
+
+```bash
+python -m venv .venv
+.venv/Scripts/activate          # Windows; use `source .venv/bin/activate` elsewhere
+pip install -r requirements-dev.txt
+cp .env.example .env            # then set PINECONE_API_KEY (and GROQ_API_KEY, optional)
+```
+
+## Running
+
+```bash
+# API (http://127.0.0.1:8000/docs)
+uvicorn app.main:app --reload
+
+# Ingestion worker
+python -m workers.ingestion_worker --dry-run          # count batches only
+python -m workers.ingestion_worker --max-batches 2    # small real run
+python -m workers.ingestion_worker                    # full run; Ctrl-C safe, rerun to resume
+python -m workers.ingestion_worker --only-failed      # retry failed batches
+
+# Tests
+pytest                                    # unit + integration (no network)
+RUN_LIVE_TESTS=1 pytest tests/integration/vector_db   # against the real index
+```
+
+The worker reads `data/metadata.parquet` and `data/reviews.parquet` and
+checkpoints to `data/checkpoints/`. Only one batch of reviews is held in
+memory at a time.
+
+## Docker
+
+```bash
+docker build -t fashion-search .
+docker run --env-file .env -p 8000:8000 fashion-search
+
+# or with compose
+docker compose up --build                                   # API
+docker compose --profile ingestion run --rm worker --max-batches 2   # worker
+```
+
+## Configuration
+
+All settings come from environment variables or `.env`; see `.env.example`.
+Only `PINECONE_API_KEY` is required. Without `GROQ_API_KEY`, query
+understanding falls back to regex extraction.

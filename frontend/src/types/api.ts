@@ -1,10 +1,10 @@
-// Mirrors the real backend schemas exactly (app/schemas/*.py).
+// Mirrors the real backend schemas exactly (app/schemas/search.py).
 // Do not add fields the backend doesn't return.
 
 export interface SearchResult {
   product_id: string
   title: string
-  images: string[] // large-size URLs, main image first (see app/search/images.py)
+  images: string[] // large-size URLs, main image first (see app/domain/product.py)
   average_rating?: number | null
   review_highlights?: string[] | null
 }
