@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     )
 
     # Service
-    SERVICE_NAME: str = "fashion-search"
+    SERVICE_NAME: str = "styleiq"
     LOG_LEVEL: str = "INFO"
     # Browser origins allowed to call the API (any local port by default,
     # since Vite falls back to 5174, 5175... when 5173 is taken).

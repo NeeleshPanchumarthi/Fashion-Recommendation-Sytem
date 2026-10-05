@@ -1,4 +1,4 @@
-import { BRAND_NAME, HERO_IMAGE } from "@/lib/brand"
+import { BRAND_NAME } from "@/lib/brand"
 
 export function Footer() {
   return (
@@ -8,13 +8,6 @@ export function Footer() {
           <p className="font-display text-3xl text-white">{BRAND_NAME.toLowerCase()}</p>
           <p className="mt-1 text-sm text-brand-200">Describe the outfit you want. We'll find it.</p>
         </div>
-        <p className="text-xs text-brand-200/70">
-          Hero photo by{" "}
-          <a href={HERO_IMAGE.creditUrl} target="_blank" rel="noreferrer" className="underline hover:text-white">
-            {HERO_IMAGE.credit}
-          </a>{" "}
-          on Unsplash
-        </p>
       </div>
     </footer>
   )

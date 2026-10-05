@@ -1,7 +1,7 @@
 // Brand + home-page content in one place, so renaming or swapping the hero
 // photo is a one-file change.
 
-export const BRAND_NAME = "Vestira"
+export const BRAND_NAME = "StyleIQ"
 
 // Free to use under the Unsplash License (photo by Maksym Tymchyk). Loaded
 // from Unsplash's CDN; replace with a local file in /public to self-host.
