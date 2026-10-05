@@ -56,7 +56,6 @@ A React frontend in `frontend/` is a separate client of the API.
 
 ## Demo
 
-> 📸 *Demo video and screenshots will be added here.*
 
 <!-- DEMO_PLACEHOLDER -->
 <p align="center">
@@ -67,7 +66,7 @@ A React frontend in `frontend/` is a separate client of the API.
 
 ## Architecture
 
-> 🗺️ *Architecture diagram will be added here.*
+
 
 <!-- ARCHITECTURE_DIAGRAM_PLACEHOLDER -->
 
