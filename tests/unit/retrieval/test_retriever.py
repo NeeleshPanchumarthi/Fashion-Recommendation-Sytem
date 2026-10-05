@@ -62,10 +62,11 @@ def test_outfit_plan_covers_every_group_per_gender_pool():
 
     plan = plan_subqueries(SearchFilters(color="red", style="party"), outfit=True)
     assert [(sq.group, sq.filters.gender) for sq in plan] == [
-        ("tops", None), ("bottoms", None), ("footwear", None),
-        ("tops", "men"), ("bottoms", "men"), ("footwear", "men"),
+        ("tops", None), ("bottoms", None), ("footwear", None), ("accessories", None),
+        ("tops", "men"), ("bottoms", "men"), ("footwear", "men"), ("accessories", "men"),
     ]
-    assert all(sq.filters.color == "red" and sq.filters.style is None and sq.filters.categories for sq in plan)
+    assert all(sq.filters.color == "red" and sq.filters.style is None for sq in plan)
+    assert all(sq.filters.categories for sq in plan if sq.group != "accessories")
 
 
 def test_relax_all_at_once_costs_at_most_two_searches():

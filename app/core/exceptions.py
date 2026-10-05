@@ -29,6 +29,11 @@ class NotFoundError(AppError):
     code = "not_found"
 
 
+class TooManyRequestsError(AppError):
+    status_code = 429
+    code = "too_many_requests"
+
+
 class DependencyUnavailableError(AppError):
     """An external system (Pinecone, a model, the LLM) could not be used."""
 

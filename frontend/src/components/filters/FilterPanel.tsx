@@ -27,9 +27,9 @@ export function FilterPanel({ filters, setFilters, appliedFilters, onReset }: Fi
             {appliedEntries.map(([key, value]) => (
               <span
                 key={key}
-                className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-xs text-brand-700"
+                className="inline-flex items-center gap-1 rounded-full border border-neutral-200 px-3 py-1 text-xs text-ink"
               >
-                <span className="text-brand-700/60">{key.replace(/_/g, " ")}</span>
+                <span className="text-neutral-400">{key.replace(/_/g, " ")}</span>
                 <span className="font-medium">{String(value)}</span>
               </span>
             ))}
@@ -53,7 +53,7 @@ export function FilterPanel({ filters, setFilters, appliedFilters, onReset }: Fi
         </Select>
         <button
           onClick={onReset}
-          className="mt-3 inline-flex items-center gap-1.5 text-xs text-slate-500 transition-colors hover:text-brand-700"
+          className="mt-3 inline-flex items-center gap-1.5 text-xs text-neutral-500 transition-colors hover:text-ink"
         >
           <RotateCcw className="size-3" />
           Reset

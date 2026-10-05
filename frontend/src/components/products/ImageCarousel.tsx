@@ -51,7 +51,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
 
   return (
     <div
-      className={cn("group/carousel relative overflow-hidden bg-tile", aspect, className)}
+      className={cn("group/carousel relative overflow-hidden bg-tile dark:bg-[#f4f3f1]", aspect, className)}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
@@ -60,7 +60,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
         style={{ transform: `translateX(-${index * 100}%)` }}
       >
         {list.map((src, i) => (
-          <div key={src} className="flex h-full w-full shrink-0 items-center justify-center bg-tile p-6">
+          <div key={src} className="flex h-full w-full shrink-0 items-center justify-center bg-tile p-6 dark:bg-[#f4f3f1]">
             {failed.has(i) ? (
               <ImageOff className="size-10 text-slate-300" />
             ) : (
@@ -106,7 +106,7 @@ export function ImageCarousel({ images, alt, aspect = "aspect-[3/4]", className 
                 aria-label={`Show image ${i + 1}`}
                 className={cn(
                   "size-1.5 rounded-full transition-all",
-                  i === index ? "w-3 bg-brand-600" : "bg-white"
+                  i === index ? "w-3 bg-ink" : "bg-white"
                 )}
               />
             ))}

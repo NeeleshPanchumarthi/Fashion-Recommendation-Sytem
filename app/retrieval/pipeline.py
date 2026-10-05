@@ -11,7 +11,7 @@
 
 Normal query ("black jeans for men"): 1–2 searches (one per gender pool).
 Outfit query ("an outfit for a wedding"): one search per garment group
-(tops, bottoms, footwear) per pool -- up to 6 -- each with a smaller
+(tops, bottoms, footwear, accessories) per pool -- up to 8 -- each with a smaller
 candidate count, so the reranking
 budget -- the expensive step -- stays the same. Each group searches and
 reranks with its own text ("shoes for a wedding"), so footwear results are
@@ -27,9 +27,10 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Optional
 
 from app.clients.embedding_client import EmbeddingClient
-from app.domain.outfit import OUTFIT_GROUPS, group_query
+from app.domain.outfit import ACCESSORIES, OUTFIT_GROUPS, group_query
 from app.domain.product import ProductMatch
 from app.domain.search import SearchOutcome
+from app.domain.sections import is_accessory
 
 from .query_processor import QueryProcessor
 from .reranker import Reranker
@@ -39,6 +40,10 @@ logger = logging.getLogger(__name__)
 
 # Each outfit search must contribute at least this many reranked candidates.
 MIN_CANDIDATES_PER_SEARCH = 2
+
+# The accessories search has no category filter, so most of what it returns
+# isn't an accessory; fetch more and keep only the ones that are.
+ACCESSORIES_DENSE_K = 40
 
 
 class RetrievalPipeline:
@@ -83,13 +88,22 @@ class RetrievalPipeline:
 
         # 1. Dense searches, in parallel.
         results = list(self._executor.map(
-            lambda sq: self._retriever.retrieve(vectors[sq.group], sq.filters, dense_k, relax_all_at_once=outfit),
+            lambda sq: self._retriever.retrieve(
+                vectors[sq.group], sq.filters,
+                ACCESSORIES_DENSE_K if sq.group == ACCESSORIES else dense_k,
+                relax_all_at_once=outfit,
+            ),
             plan,
         ))
         searched = time.perf_counter()
 
         # 2. One batched rerank over every search's top candidates.
-        candidates = [matches[:per_search_k] for matches, _ in results]
+        candidates = [
+            [m for m in matches if sq.group != ACCESSORIES or is_accessory(m.product.category, m.product.title)][
+                :per_search_k
+            ]
+            for sq, (matches, _) in zip(plan, results)
+        ]
         self._reranker.score([(rerank_texts[sq.group], m) for sq, ranked in zip(plan, candidates) for m in ranked])
         for group in candidates:
             group.sort(key=lambda m: m.relevance, reverse=True)

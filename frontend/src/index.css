@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* Design tokens: deep maroon brand on near-black and warm white. */
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
@@ -23,6 +25,13 @@
   --animate-blur-in: blur-in 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-slide-in: slide-in 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) both;
   --animate-glow: glow 4s ease-in-out infinite;
+  --animate-scan: scan 2.4s ease-in-out infinite;
+}
+
+/* Try-on progress: a soft light band sweeping down the photo. */
+@keyframes scan {
+  from { top: -6rem; }
+  to { top: 100%; }
 }
 
 @keyframes hero-zoom {
@@ -58,8 +67,52 @@
   }
 }
 
+/* Dark mode re-points the palette variables the components already use
+   (white, neutral/slate scales, ink, light brand tints), so every page
+   switches without per-component dark: classes. */
+.dark {
+  color-scheme: dark;
+  --color-white: #121010;
+  --color-ink: #f3f0f0;
+  --color-tile: #1c1818;
+  --color-brand-50: #2a1213;
+  --color-brand-100: #3a1618;
+  --color-brand-600: #d4393d;
+  --color-brand-700: #c22f33;
+  --color-neutral-50: #171414;
+  --color-neutral-100: #1f1b1b;
+  --color-neutral-200: #2e2929;
+  --color-neutral-300: #403a3a;
+  --color-neutral-400: #6b6464;
+  --color-neutral-500: #8c8585;
+  --color-neutral-600: #a8a2a2;
+  --color-neutral-700: #c4bfbf;
+  --color-neutral-800: #dcd8d8;
+  --color-neutral-900: #efecec;
+  --color-slate-50: #171414;
+  --color-slate-100: #1f1b1b;
+  --color-slate-200: #2e2929;
+  --color-slate-300: #403a3a;
+  --color-slate-400: #6b6464;
+  --color-slate-500: #8c8585;
+  --color-slate-600: #a8a2a2;
+  --color-slate-700: #c4bfbf;
+  --color-slate-800: #dcd8d8;
+  --color-slate-900: #efecec;
+}
+
+/* Regions drawn over photos / solid brand colour keep the light palette. */
+.dark .theme-fixed {
+  --color-white: #ffffff;
+  --color-ink: #0d0b0b;
+  --color-brand-50: #fdf2f2;
+  --color-brand-100: #fbe4e4;
+  --color-brand-600: #a11519;
+  --color-brand-700: #870f13;
+}
+
 body {
-  background-color: #ffffff;
+  background-color: var(--color-white);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;

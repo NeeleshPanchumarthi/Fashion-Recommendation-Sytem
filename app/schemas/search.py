@@ -1,4 +1,4 @@
-"""HTTP contracts for POST /api/v1/search.
+"""HTTP contracts for POST /api/search.
 
 Kept separate from the domain models: field names here are the public API
 the frontend depends on, and can stay stable while internals change.
@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 
 from app.domain.product import ProductMatch
 from app.domain.search import SearchOutcome
+from app.domain.sections import effective_gender, is_accessory, is_footwear
+from app.domain.tryon import garment_type_for
 
 
 class SearchRequest(BaseModel):
@@ -33,16 +35,29 @@ class SearchResult(BaseModel):
     review_highlights: Optional[List[str]] = Field(
         None, description="Selected review snippets (60% positive / 20% neutral / 20% negative mix)"
     )
+    garment_type: Optional[str] = Field(
+        None, description="Try-on garment type (upper_body | lower_body | dresses); null if it can't be tried on"
+    )
+
+    gender: Optional[str] = Field(
+        None, description="men | women | kids | unisex; null if the product doesn't say (drives the Men/Women/Kids tabs)"
+    )
+    is_accessory: bool = Field(False, description="Hat, bag, belt, watch...; drives the Accessories tab")
+    is_footwear: bool = Field(False, description="Shoes, sneakers, boots, sandals...; drives the Footwear tab")
 
     @classmethod
     def from_match(cls, match: ProductMatch) -> "SearchResult":
         product = match.product
         return cls(
+            gender=effective_gender(product.gender, product.category, product.title),
+            is_accessory=is_accessory(product.category, product.title),
+            is_footwear=is_footwear(product.category, product.title),
             product_id=product.product_id,
             title=product.title,
             images=product.display_images,
             average_rating=product.average_rating,
             review_highlights=product.review_highlights,
+            garment_type=garment_type_for(product.category, product.title),
         )
 
 

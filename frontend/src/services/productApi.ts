@@ -1,5 +1,5 @@
 // IMPORTANT: the backend exposes no GET /product/:id endpoint -- only
-// POST /api/v1/search. There is no way to fetch a single product by id
+// POST /api/search. There is no way to fetch a single product by id
 // from the server. "Product details" are therefore the SearchResult the
 // user clicked, carried via router navigation state (see pages/ProductDetails).
 //

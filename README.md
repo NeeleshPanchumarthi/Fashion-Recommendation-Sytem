@@ -17,18 +17,29 @@ The React app in `frontend/` is a separate client of this API.
 
 ## Architecture
 
-```
-Client ─► FastAPI (app/main.py: request IDs, errors, CORS)
-            └─► api/v1 routers ─► services ─► retrieval ─► repositories ─► clients ─► Pinecone / Groq / models
+Two processes share one codebase (`app/` clients, repositories, domain rules).
+The API serves requests; the worker fills the index offline. Pinecone is the
+only thing they have in common at runtime.
 
-Dataset ─► workers/ingestion_worker ─► batch_processor ─► services ─► repositories ─► Pinecone
-```
+![AWS architecture](docs/aws-architecture.svg)
+
+*Proposed AWS deployment. Today both processes run locally with `uvicorn` and the worker CLI.*
+
+Search flow: the query is understood (regex, then the LLM for fields regex
+missed; if Groq is down it falls back to regex only), embedded in one batch,
+searched in Pinecone once per gender pool (and per outfit group for outfit
+queries, in parallel), reranked in one cross-encoder batch, interleaved and
+cut to `top_k`.
+
+Try-on flow: `POST` validates the photo and garment URL and returns a job at
+once (202); a background thread calls the Hugging Face Space; the client polls
+`GET` for the stage and the final image. Jobs live in memory for 15 minutes.
 
 ```
 app/
   main.py            app factory, startup (model warm-up), middleware, error handling
   dependencies.py    composition root: builds clients → repositories → services
-  api/               HTTP only: router.py, v1/health.py, v1/search.py
+  api/               HTTP only: router.py, routes/health.py, routes/search.py, routes/tryon.py
   core/              config.py, logging.py, exceptions.py
   schemas/           HTTP request/response contracts
   domain/            Product, SearchFilters, image-selection rule, attribute vocabularies/extractors
@@ -46,12 +57,22 @@ tests/integration/   API over HTTP, worker end-to-end, live Pinecone (opt-in)
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/api/v1/health` | Liveness: process is up |
-| GET | `/api/v1/ready` | Readiness: models loaded, Pinecone reachable (503 if not) |
-| POST | `/api/v1/search` | `{"query": "...", "top_k": 10}` → ranked products |
+| GET | `/api/health` | Liveness: process is up |
+| GET | `/api/ready` | Readiness: models loaded, Pinecone reachable (503 if not) |
+| POST | `/api/search` | `{"query": "...", "top_k": 10}` → ranked products |
+| POST | `/api/try-on` | multipart `person_image` + `garment_image_url` + `garment_type` → 202 with a job |
+| GET | `/api/try-on/{job_id}` | Poll a try-on: `stage`, `queue_position`, and `result_image` (data URL) when done |
+
+**Virtual try-on** runs the [Leffa](https://huggingface.co/spaces/franciszzj/Leffa)
+model on a Hugging Face Space (free shared GPU), so nothing heavy runs locally.
+Set `HF_TOKEN` (a "Read" token) for a larger free quota. Search results carry
+`garment_type` (`upper_body` / `lower_body` / `dresses`, or null for shoes,
+hats...), which decides whether a product can be tried on. Photos are cropped
+to 3:4 and never stored; jobs and results live in memory for 15 minutes.
+`python scripts/try_tryon.py --person me.jpg` tries the Space directly.
 
 Errors return `{"detail", "code", "request_id"}`: 400 invalid request,
-422 validation error, 503 dependency unavailable, 500 internal error. Every
+422 validation error, 429 too many try-ons, 503 dependency unavailable, 500 internal error. Every
 response has an `X-Request-ID` header, which also appears in the logs.
 
 ## Setup

@@ -115,3 +115,23 @@ class FakeSentimentClient:
 
 def product_vector(pid: str, title: str, **metadata: Any) -> dict[str, Any]:
     return {"id": pid, "values": [0.0, 0.0, 1.0], "metadata": {"title": title, **metadata}}
+
+
+class FakeTryOnClient:
+    """Walks through the try-on stages and returns fixed image bytes."""
+
+    def __init__(self, fail: bool = False) -> None:
+        self.fail = fail
+        self.calls: list[tuple[bytes, str, str]] = []
+
+    def generate(self, person_image, garment_image_url, garment_type, on_status=lambda stage, position: None):
+        from app.domain.tryon import TryOnStage
+
+        self.calls.append((person_image, garment_image_url, garment_type))
+        on_status(TryOnStage.UPLOADING, None)
+        on_status(TryOnStage.WAITING_FOR_GPU, 2)
+        on_status(TryOnStage.GENERATING, None)
+        if self.fail:
+            raise DependencyUnavailableError("tryon", "The free GPU quota for try-on is used up for now.")
+        on_status(TryOnStage.FINISHING, None)
+        return b"fake-image", "image/webp"
