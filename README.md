@@ -244,5 +244,3 @@ The structured category taxonomy and extracted attributes from the data-quality 
 
 ---
 
-## License
-*To be added.*
