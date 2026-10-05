@@ -2,9 +2,8 @@ import { useState, type FormEvent } from "react"
 import { ArrowRight } from "lucide-react"
 import { SUGGESTED_SEARCHES } from "@/lib/brand"
 
-// Search panel for the home hero: a white pill input, then quick searches
-// styled like the reference design's category list (each turns into a
-// white pill with an arrow on hover).
+// Understated search for the home hero: an underlined field on the photo,
+// with quick searches as small text links beneath it.
 export function HeroSearch({ onSearch }: { onSearch: (query: string) => void }) {
   const [value, setValue] = useState("")
 
@@ -14,41 +13,34 @@ export function HeroSearch({ onSearch }: { onSearch: (query: string) => void }) 
   }
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full max-w-xl">
       <form
         onSubmit={submit}
-        className="animate-slide-in flex items-center gap-2 rounded-full bg-white py-1.5 pl-5 pr-1.5 shadow-xl shadow-black/30"
-        style={{ animationDelay: "700ms" }}
+        className="group flex items-center gap-3 border-b border-white/35 pb-3 transition-colors focus-within:border-white"
       >
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder="Describe the outfit you want…"
+          placeholder="Describe the outfit you want"
           aria-label="Describe the outfit you want"
-          className="min-w-0 flex-1 bg-transparent text-[15px] text-ink placeholder:text-slate-400 focus:outline-none"
+          className="min-w-0 flex-1 bg-transparent text-lg text-white placeholder:text-white/45 focus:outline-none"
         />
-        <button
-          type="submit"
-          aria-label="Search"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700"
-        >
-          <ArrowRight className="size-4" />
+        <button type="submit" aria-label="Search" className="text-white/60 transition-colors hover:text-white">
+          <ArrowRight className="size-5" strokeWidth={1.5} />
         </button>
       </form>
 
-      <ul className="mt-3 space-y-0.5">
+      <p className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-1 text-[13px] text-white/45">
+        <span className="mr-1">Try</span>
         {SUGGESTED_SEARCHES.map((query, i) => (
-          <li key={query} className="animate-slide-in" style={{ animationDelay: `${850 + i * 110}ms` }}>
-            <button
-              onClick={() => onSearch(query)}
-              className="group flex w-full items-center justify-between rounded-full px-5 py-2 text-left font-display text-[15px] text-white transition-all duration-300 hover:bg-white hover:text-brand-700"
-            >
+          <span key={query} className="flex items-center gap-x-1">
+            <button onClick={() => onSearch(query)} className="text-white/70 transition-colors hover:text-white">
               {query}
-              <ArrowRight className="size-4 -translate-x-2 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
             </button>
-          </li>
+            {i < SUGGESTED_SEARCHES.length - 1 && <span aria-hidden>·</span>}
+          </span>
         ))}
-      </ul>
+      </p>
     </div>
   )
 }

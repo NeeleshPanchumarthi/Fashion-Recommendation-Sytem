@@ -47,6 +47,7 @@ def create_app(settings: Optional[Settings] = None, container: Optional[ServiceC
                 logger.exception("Model warm-up failed")
         logger.info("%s started", settings.SERVICE_NAME)
         yield
+        app.state.container.close()
         logger.info("%s stopped", settings.SERVICE_NAME)
 
     app = FastAPI(

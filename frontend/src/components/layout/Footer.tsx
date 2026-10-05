@@ -2,7 +2,7 @@ import { BRAND_NAME, HERO_IMAGE } from "@/lib/brand"
 
 export function Footer() {
   return (
-    <footer className="bg-brand-900 text-brand-100">
+    <footer className="theme-fixed bg-brand-900 text-brand-100">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-10 sm:flex-row sm:items-end sm:justify-between sm:px-8">
         <div>
           <p className="font-display text-3xl text-white">{BRAND_NAME.toLowerCase()}</p>

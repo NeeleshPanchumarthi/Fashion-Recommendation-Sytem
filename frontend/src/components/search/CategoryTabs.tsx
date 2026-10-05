@@ -1,26 +1,32 @@
 import { cn } from "@/lib/utils"
 import { CATEGORY_TABS, type CategoryTab } from "@/lib/brand"
 
-// Pill tabs above the results grid (All Products / Men / Women / Kids /
-// Accessories). Selection is tracked but doesn't filter yet -- results
-// don't carry a gender/category field; wiring this up is a planned feature.
-export function CategoryTabs({ value, onChange }: { value: CategoryTab; onChange: (tab: CategoryTab) => void }) {
+// Text tabs above the results grid. Each shows how many of the returned
+// results belong to it; the page filters the grid by the selected tab.
+export function CategoryTabs({
+  value,
+  onChange,
+  counts,
+}: {
+  value: CategoryTab
+  onChange: (tab: CategoryTab) => void
+  counts: Record<CategoryTab, number>
+}) {
   return (
-    <div role="tablist" aria-label="Product categories" className="flex flex-wrap gap-2">
-      {CATEGORY_TABS.map((tab) => (
+    <div role="tablist" aria-label="Product categories" className="flex flex-wrap gap-x-6 gap-y-2">
+      {CATEGORY_TABS.map(({ slug, label }) => (
         <button
-          key={tab}
+          key={slug}
           role="tab"
-          aria-selected={tab === value}
-          onClick={() => onChange(tab)}
+          aria-selected={slug === value}
+          onClick={() => onChange(slug)}
           className={cn(
-            "rounded-full border px-4 py-1.5 text-sm transition-colors",
-            tab === value
-              ? "border-ink bg-ink text-white"
-              : "border-slate-200 bg-white text-slate-600 hover:border-slate-400 hover:text-ink"
+            "border-b pb-1 text-[13px] transition-colors",
+            slug === value ? "border-ink text-ink" : "border-transparent text-neutral-400 hover:text-ink"
           )}
         >
-          {tab}
+          {label}
+          <span className="ml-1.5 text-[11px] tabular-nums text-neutral-400">{counts[slug]}</span>
         </button>
       ))}
     </div>

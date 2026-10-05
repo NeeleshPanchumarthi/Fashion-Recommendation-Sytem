@@ -14,13 +14,44 @@ export const HERO_IMAGE = {
 // Quick searches shown in the hero, in place of the reference design's
 // category list. Each one runs a real search.
 export const SUGGESTED_SEARCHES = [
-  "black leather jacket for men",
+  "smart casual outfit for the office",
   "dress for a summer wedding",
+  "black leather jacket for men",
   "white sneakers for women",
-  "party shirt for college",
 ]
 
-// Result tabs (All Products / Men / Women / Kids / Accessories). Visual
-// only for now -- filtering by tab is a planned feature.
-export const CATEGORY_TABS = ["All Products", "Men", "Women", "Kids", "Accessories"] as const
-export type CategoryTab = (typeof CATEGORY_TABS)[number]
+// Result tabs (All Products / Men / Women / Kids / Accessories). The slug is
+// what goes in the URL (?tab=men); the tab filters the results client-side.
+export const CATEGORY_TABS = [
+  { slug: "all", label: "All Products" },
+  { slug: "men", label: "Men" },
+  { slug: "women", label: "Women" },
+  { slug: "kids", label: "Kids" },
+  { slug: "footwear", label: "Footwear" },
+  { slug: "accessories", label: "Accessories" },
+] as const
+export type CategoryTab = (typeof CATEGORY_TABS)[number]["slug"]
+
+// Unisex items show under both Men and Women; footwear and accessories get
+// their own tab and also stay under their gender tab and All Products.
+export function inTab(
+  r: { gender?: string | null; is_accessory?: boolean; is_footwear?: boolean },
+  tab: CategoryTab
+): boolean {
+  switch (tab) {
+    case "all":
+      return true
+    case "footwear":
+      return !!r.is_footwear
+    case "accessories":
+      return !!r.is_accessory
+    case "kids":
+      return r.gender === "kids"
+    default:
+      return r.gender === tab || r.gender === "unisex"
+  }
+}
+
+export function parseTab(value: string | null): CategoryTab {
+  return CATEGORY_TABS.find((t) => t.slug === value)?.slug ?? "all"
+}

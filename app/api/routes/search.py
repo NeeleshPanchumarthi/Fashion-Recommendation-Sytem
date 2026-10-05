@@ -1,4 +1,4 @@
-"""POST /api/v1/search -- natural-language product search."""
+"""POST /api/search -- natural-language product search."""
 
 from __future__ import annotations
 
@@ -20,6 +20,6 @@ router = APIRouter(tags=["search"])
     response_model=SearchResponse,
     responses={400: {"model": ErrorResponse}, 503: {"model": ErrorResponse}},
 )
-def search(request: SearchRequest, service: SearchService = Depends(get_search_service)) -> SearchResponse:
+def search_products(request: SearchRequest, service: SearchService = Depends(get_search_service)) -> SearchResponse:
     outcome = service.search(request.query, top_k=request.top_k, vector=request.vector)
     return SearchResponse.from_outcome(outcome)

@@ -1,6 +1,7 @@
 import { Outlet, Route, Routes } from "react-router-dom"
 import { Navbar } from "@/components/layout/Navbar"
 import { Footer } from "@/components/layout/Footer"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import Home from "@/pages/Home"
 import SearchResults from "@/pages/SearchResults"
 import ProductDetails from "@/pages/ProductDetails"
@@ -22,7 +23,9 @@ function PageLayout() {
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ThemeToggle />
+      <Routes>
       <Route path="/" element={<Home />} />
       <Route element={<PageLayout />}>
         <Route path="/search" element={<SearchResults />} />
@@ -30,5 +33,6 @@ export default function App() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+    </>
   )
 }

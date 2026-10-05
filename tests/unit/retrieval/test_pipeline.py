@@ -26,34 +26,38 @@ CATALOG = [
     product_vector("MB1", "Men's wedding suit trousers", gender="men", category="trousers"),
     product_vector("MF1", "Men's leather wedding shoes", gender="men", category="shoes"),
     product_vector("MD1", "Mens Dress Tuxedo Vest", gender="men", category="dress"),  # mis-tagged at ingestion
-    product_vector("K1", "Kids flower girl dress for wedding", gender="kids", category="dress"),
+    product_vector("WA1", "Women's wedding clutch bag", gender="women"),
+    product_vector("MA1", "Men's leather wedding belt", gender="men"),
+    product_vector("K1","Kids flower girl dress for wedding", gender="kids", category="dress"),
 ]
 
-GROUP_OF = {"blouse": "tops", "shirt": "tops", "skirt": "bottoms", "trousers": "bottoms", "shoes": "footwear"}
+GROUP_OF = {
+    "blouse": "tops", "shirt": "tops", "skirt": "bottoms", "trousers": "bottoms", "shoes": "footwear", None: "accessories",
+}
 
 
 def _categories(outcome):
     return {m.product.category for m in outcome.matches}
 
 
-def test_outfit_query_returns_tops_bottoms_and_footwear_for_both_genders():
+def test_outfit_query_returns_tops_bottoms_footwear_and_accessories_for_both_genders():
     outcome = _pipeline(CATALOG).run("outfit for a wedding", top_k=12)
     ids = {m.product.product_id for m in outcome.matches}
 
-    assert ids == {"WT1", "WB1", "WF1", "MT1", "MB1", "MF1"}  # no dresses, no kids
-    assert outcome.applied_filters == {"outfit": "tops, bottoms, footwear"}
+    assert ids == {"WT1", "WB1", "WF1", "WA1", "MT1", "MB1", "MF1", "MA1"}  # no dresses, no kids
+    assert outcome.applied_filters == {"outfit": "tops, bottoms, footwear, accessories"}
 
 
 def test_outfit_groups_are_interleaved_not_bunched():
     outcome = _pipeline(CATALOG).run("wedding attire", top_k=12)
-    first_three = [GROUP_OF[m.product.category] for m in outcome.matches[:3]]
-    assert sorted(first_three) == ["bottoms", "footwear", "tops"]
+    first_four = [GROUP_OF[m.product.category] for m in outcome.matches[:4]]
+    assert sorted(first_four) == ["accessories", "bottoms", "footwear", "tops"]
 
 
 def test_outfit_query_for_one_gender_stays_single_gender():
     outcome = _pipeline(CATALOG).run("outfit for my husband for a wedding", top_k=12)
     assert {m.product.gender for m in outcome.matches} == {"men"}
-    assert _categories(outcome) == {"shirt", "trousers", "shoes"}
+    assert _categories(outcome) == {"shirt", "trousers", "shoes", None}  # None: the belt
 
 
 def test_dress_query_returns_only_dresses_and_skips_the_mens_pool():

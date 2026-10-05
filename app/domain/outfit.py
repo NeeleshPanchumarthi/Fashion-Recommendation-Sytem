@@ -1,6 +1,6 @@
 """Outfit queries: general requests ("an outfit for a party", "wedding
 attire", "something to wear to college") that should return a complete look
--- topwear, bottomwear and footwear -- rather than one garment type.
+-- topwear, bottomwear, footwear and accessories -- rather than one garment type.
 
 A query is an outfit query when it uses a general clothing word and doesn't
 name a specific garment. "dress" is a specific garment (a one-piece covering
@@ -19,17 +19,23 @@ _GENERAL_TERMS = re.compile(
     re.IGNORECASE,
 )
 
+ACCESSORIES = "accessories"
+
 # Garment groups searched for an outfit query, in display order. Values are
 # the category tags assigned at ingestion (app/domain/attributes/vocabularies.py).
 OUTFIT_GROUPS: dict[str, tuple[str, ...]] = {
     "tops": ("shirt", "t-shirt", "blouse", "sweater", "hoodie", "jacket", "coat"),
     "bottoms": ("pants", "trousers", "jeans", "shorts", "skirt"),
     "footwear": ("shoes", "sneakers"),
+    # The index tags only hats/caps as a category, so accessories can't be
+    # filtered by category: this group searches unfiltered and the pipeline
+    # keeps only candidates that look like accessories (app/domain/sections.py).
+    ACCESSORIES: (),
 }
 
 # Garment word substituted for the general term in each group's search text,
 # so the footwear search looks for shoes rather than "an outfit".
-GROUP_NOUNS = {"tops": "shirt", "bottoms": "pants", "footwear": "shoes"}
+GROUP_NOUNS = {"tops": "shirt", "bottoms": "pants", "footwear": "shoes", ACCESSORIES: "accessories"}
 
 
 def is_outfit_query(query: str, category: Optional[str]) -> bool:

@@ -45,6 +45,16 @@ class Settings(BaseSettings):
     LLM_TIMEOUT_SECONDS: float = 6.0
     LLM_CONNECT_ATTEMPTS: int = 2
 
+    # Virtual try-on (Hugging Face Space) -- optional: without a token the
+    # Space is called anonymously, with a much smaller free GPU quota.
+    HF_TOKEN: SecretStr = SecretStr("")
+    TRYON_SPACE: str = "franciszzj/Leffa"
+    TRYON_TIMEOUT_SECONDS: float = 180.0   # give up on one try-on after this
+    TRYON_MAX_ACTIVE_JOBS: int = 4          # running + waiting jobs; more get a 429
+    TRYON_WORKERS: int = 2                  # try-ons sent to the Space at once
+    TRYON_JOB_TTL_SECONDS: float = 900.0    # results are kept in memory this long
+    TRYON_MAX_UPLOAD_MB: int = 10
+
     # Models
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
     CROSS_ENCODER_MODEL: str = "cross-encoder/ms-marco-MiniLM-L-6-v2"
@@ -53,10 +63,10 @@ class Settings(BaseSettings):
     WARM_MODELS_ON_STARTUP: bool = True
 
     # Retrieval
-    TOP_K: int = 12                  # results returned when the request doesn't say
-    DENSE_SEARCH_K: int = 40         # Pinecone candidates per search (normal queries)
+    TOP_K: int = 36                  # results returned when the request doesn't say (max 50)
+    DENSE_SEARCH_K: int = 60         # Pinecone candidates per search (normal queries)
     OUTFIT_DENSE_K: int = 10         # Pinecone candidates per search (outfit queries: one per group)
-    RERANK_CANDIDATES_K: int = 24    # total candidates cross-encoder reranked, split across searches
+    RERANK_CANDIDATES_K: int = 48    # total candidates cross-encoder reranked, split across searches
 
     # Ingestion worker
     METADATA_PATH: Path = PROJECT_ROOT / "data" / "metadata.parquet"

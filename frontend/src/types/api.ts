@@ -7,7 +7,15 @@ export interface SearchResult {
   images: string[] // large-size URLs, main image first (see app/domain/product.py)
   average_rating?: number | null
   review_highlights?: string[] | null
+  // Try-on garment type; null when the product can't be tried on (shoes, hats...).
+  garment_type?: GarmentType | null
+  // Drive the Men / Women / Kids / Accessories tabs (see app/domain/sections.py).
+  gender?: "men" | "women" | "kids" | "unisex" | null
+  is_accessory?: boolean
+  is_footwear?: boolean
 }
+
+export type GarmentType = "upper_body" | "lower_body" | "dresses"
 
 export interface SearchResponse {
   query: string
@@ -24,4 +32,24 @@ export interface SearchRequest {
   query: string
   vector?: number[]
   top_k?: number
+}
+
+// app/schemas/tryon.py
+export type TryOnStage =
+  | "queued"
+  | "uploading"
+  | "waiting_for_gpu"
+  | "generating"
+  | "finishing"
+  | "done"
+  | "failed"
+
+export interface TryOnJob {
+  job_id: string
+  stage: TryOnStage
+  garment_type: GarmentType
+  queue_position?: number | null
+  elapsed_seconds: number
+  result_image?: string | null // data: URL once stage is "done"
+  error?: string | null // user-facing reason once stage is "failed"
 }
