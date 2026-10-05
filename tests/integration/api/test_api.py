@@ -57,7 +57,7 @@ def client():
 
 
 def test_health_is_cheap_and_always_ok(client):
-    assert client.get("/api/health").json() == {"status": "ok", "service": "fashion-search"}
+    assert client.get("/api/health").json() == {"status": "ok", "service": "styleiq"}
 
 
 def test_ready_reports_dependency_checks(client):

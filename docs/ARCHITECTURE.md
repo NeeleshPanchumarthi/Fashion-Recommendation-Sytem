@@ -1,4 +1,4 @@
-# Fashion Recommendation Architecture
+# StyleIQ Architecture
 
 This project is a semantic fashion search and virtual try-on application. It has three main runtime surfaces:
 

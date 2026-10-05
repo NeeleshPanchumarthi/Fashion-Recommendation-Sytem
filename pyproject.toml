@@ -1,5 +1,5 @@
 [project]
-name = "fashion-search"
+name = "styleiq"
 version = "1.0.0"
 description = "Semantic fashion product search microservice (FastAPI API + offline ingestion worker)"
 requires-python = ">=3.11"

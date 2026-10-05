@@ -51,7 +51,7 @@ def create_app(settings: Optional[Settings] = None, container: Optional[ServiceC
         logger.info("%s stopped", settings.SERVICE_NAME)
 
     app = FastAPI(
-        title="Fashion Search Service",
+        title="StyleIQ Search Service",
         description="Semantic fashion product search: query understanding, vector retrieval and reranking.",
         version="1.0.0",
         lifespan=lifespan,

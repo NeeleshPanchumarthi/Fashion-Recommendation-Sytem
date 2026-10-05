@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="1190" viewBox="0 0 1700 1190" font-family="Arial, Helvetica, sans-serif"><defs><marker id="h" viewBox="0 0 12 12" refX="10" refY="6" markerWidth="11" markerHeight="11" orient="auto"><path d="M1 1L10 6L1 11" fill="none" stroke="#232F3E" stroke-width="2"/></marker></defs><rect width="1700" height="1190" fill="#fff"/><rect x="20" y="20" width="1660" height="1150" fill="#fff" stroke="#232F3E" stroke-width="3.5"/>
+<rect x="20" y="20" width="56" height="48" fill="#232F3E"/>
+<path d="M48 30l12 7v14l-12 7l-12 -7v-14z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="48" cy="44" r="4" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="92" y="51" font-size="17" fill="#232F3E">Fashion Search System</text>
+<rect x="230" y="100" width="1080" height="860" fill="#fff" stroke="#232F3E" stroke-width="3"/>
+<rect x="230" y="100" width="56" height="48" fill="#232F3E"/>
+<rect x="245" y="111" width="26" height="10" rx="2" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="245" y="127" width="26" height="10" rx="2" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="265" cy="116" r=".9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="265" cy="132" r=".9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="302" y="131" font-size="17" fill="#232F3E">FastAPI service</text>
+<rect x="230" y="990" width="1080" height="165" fill="#fff" stroke="#232F3E" stroke-width="3"/>
+<rect x="230" y="990" width="56" height="48" fill="#232F3E"/>
+<path d="M258 1014l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M258 1005l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M258 996l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="302" y="1021" font-size="17" fill="#232F3E">Ingestion worker (offline)</text>
+<rect x="1470" y="330" width="180" height="630" fill="#fff" stroke="#232F3E" stroke-width="3"/>
+<rect x="1470" y="330" width="56" height="48" fill="#232F3E"/>
+<path d="M1485 362a7 7 0 0 1 1 -14a9 9 0 0 1 17 -2a7 7 0 0 1 2 16z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1542" y="361" font-size="17" fill="#232F3E">External</text>
+<rect x="260" y="190" width="235" height="750" fill="#fff" stroke="#7D8998" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="377" y="214" text-anchor="middle" font-size="15" fill="#232F3E">API endpoints · /api</text>
+<rect x="800" y="330" width="220" height="480" fill="#fff" stroke="#E7157B" stroke-width="3"/>
+<rect x="800" y="330" width="56" height="48" fill="#E7157B"/>
+<path d="M814 342h28l-11 14v12l-6 -3v-9z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="872" y="361" font-size="17" fill="#232F3E">Retrieval</text>
+<rect x="275" y="226" width="205" height="38" rx="6" fill="#fff" stroke="#9AA5B1" stroke-width="1.4"/>
+<rect x="275" y="226" width="50" height="38" rx="6" fill="#1D8102"/><rect x="305" y="226" width="20" height="38" fill="#1D8102"/>
+<text x="300" y="250" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">GET</text>
+<text x="335" y="250" font-size="14" font-family="Consolas, Menlo, monospace" fill="#232F3E">/health</text>
+<rect x="275" y="281" width="205" height="38" rx="6" fill="#fff" stroke="#9AA5B1" stroke-width="1.4"/>
+<rect x="275" y="281" width="50" height="38" rx="6" fill="#1D8102"/><rect x="305" y="281" width="20" height="38" fill="#1D8102"/>
+<text x="300" y="305" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">GET</text>
+<text x="335" y="305" font-size="14" font-family="Consolas, Menlo, monospace" fill="#232F3E">/ready</text>
+<rect x="275" y="421" width="205" height="38" rx="6" fill="#fff" stroke="#9AA5B1" stroke-width="1.4"/>
+<rect x="275" y="421" width="50" height="38" rx="6" fill="#ED7100"/><rect x="305" y="421" width="20" height="38" fill="#ED7100"/>
+<text x="300" y="445" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">POST</text>
+<text x="335" y="445" font-size="14" font-family="Consolas, Menlo, monospace" fill="#232F3E">/search</text>
+<rect x="275" y="831" width="205" height="38" rx="6" fill="#fff" stroke="#9AA5B1" stroke-width="1.4"/>
+<rect x="275" y="831" width="50" height="38" rx="6" fill="#ED7100"/><rect x="305" y="831" width="20" height="38" fill="#ED7100"/>
+<text x="300" y="855" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">POST</text>
+<text x="335" y="855" font-size="14" font-family="Consolas, Menlo, monospace" fill="#232F3E">/try-on</text>
+<rect x="275" y="896" width="205" height="38" rx="6" fill="#fff" stroke="#9AA5B1" stroke-width="1.4"/>
+<rect x="275" y="896" width="50" height="38" rx="6" fill="#1D8102"/><rect x="305" y="896" width="20" height="38" fill="#1D8102"/>
+<text x="300" y="920" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">GET</text>
+<text x="335" y="920" font-size="14" font-family="Consolas, Menlo, monospace" fill="#232F3E">/try-on/{job_id}</text>
+<rect x="98" y="488" width="64" height="64" rx="6" fill="#8C4FFF"/>
+<rect x="115" y="508" width="30" height="24" rx="3" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M115 516H145" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="121" cy="512" r=".8" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="130" y="574" text-anchor="middle" font-size="15" fill="#232F3E">React + Vite</text>
+<text x="130" y="592" text-anchor="middle" font-size="12.5" fill="#5F6B7A">frontend</text>
+<rect x="608" y="268" width="64" height="64" rx="6" fill="#ED7100"/>
+<circle cx="640" cy="300" r="13" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M634 300l4 5l8 -9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="640" y="354" text-anchor="middle" font-size="15" fill="#232F3E">Health service</text>
+<rect x="608" y="408" width="64" height="64" rx="6" fill="#ED7100"/>
+<circle cx="637" cy="437" r="9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M644 444L654 454" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="640" y="494" text-anchor="middle" font-size="15" fill="#232F3E">Search service</text>
+<rect x="608" y="838" width="64" height="64" rx="6" fill="#ED7100"/>
+<circle cx="640" cy="863" r="6" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M627 884a13 13 0 0 1 26 0z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="640" y="924" text-anchor="middle" font-size="15" fill="#232F3E">Try-on service</text>
+<text x="640" y="942" text-anchor="middle" font-size="12.5" fill="#5F6B7A">async jobs</text>
+<rect x="878" y="408" width="64" height="64" rx="6" fill="#E7157B"/>
+<path d="M896 429h28v18h-14l-6 6v-6h-8z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M902 436h16M902 441h10" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="910" y="494" text-anchor="middle" font-size="15" fill="#232F3E">Query processor</text>
+<text x="910" y="512" text-anchor="middle" font-size="12.5" fill="#5F6B7A">regex + LLM</text>
+<rect x="878" y="548" width="64" height="64" rx="6" fill="#E7157B"/>
+<path d="M896 568h28l-11 14v12l-6 -3v-9z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="910" y="634" text-anchor="middle" font-size="15" fill="#232F3E">Retriever</text>
+<text x="910" y="652" text-anchor="middle" font-size="12.5" fill="#5F6B7A">gender pools · relaxation</text>
+<rect x="878" y="688" width="64" height="64" rx="6" fill="#E7157B"/>
+<path d="M898 708h24M898 718h17M898 728h10" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="910" y="774" text-anchor="middle" font-size="15" fill="#232F3E">Cross-encoder</text>
+<text x="910" y="792" text-anchor="middle" font-size="12.5" fill="#5F6B7A">reranker</text>
+<rect x="1528" y="408" width="64" height="64" rx="6" fill="#01A88D"/>
+<path d="M1563 426l-12 16h9l-3 12l12 -16h-9z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1560" y="494" text-anchor="middle" font-size="15" fill="#232F3E">Groq LLM</text>
+<rect x="1528" y="548" width="64" height="64" rx="6" fill="#C925D1"/>
+<ellipse cx="1560" cy="569" rx="13" ry="5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M1547 569v22c0 6 26 6 26 0v-22M1547 580c0 6 26 6 26 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1560" y="634" text-anchor="middle" font-size="15" fill="#232F3E">Pinecone</text>
+<rect x="1528" y="838" width="64" height="64" rx="6" fill="#01A88D"/>
+<path d="M1560 856l12 7v14l-12 7l-12 -7v-14z M1548 863l12 7l12 -7M1560 870v14" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="1560" y="924" text-anchor="middle" font-size="15" fill="#232F3E">Hugging Face Space</text>
+<text x="1560" y="942" text-anchor="middle" font-size="12.5" fill="#5F6B7A">Leffa</text>
+<rect x="98" y="1030" width="64" height="64" rx="6" fill="#7AA116"/>
+<ellipse cx="130" cy="1051" rx="13" ry="5" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M117 1051v22c0 6 26 6 26 0v-22M117 1062c0 6 26 6 26 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="130" y="1116" text-anchor="middle" font-size="15" fill="#232F3E">Parquet dataset</text>
+<text x="130" y="1134" text-anchor="middle" font-size="12.5" fill="#5F6B7A">via DuckDB</text>
+<rect x="368" y="1030" width="64" height="64" rx="6" fill="#ED7100"/>
+<path d="M400 1062l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M400 1053l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M400 1044l14 6l-14 6l-14 -6z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="400" y="1116" text-anchor="middle" font-size="15" fill="#232F3E">Batch processor</text>
+<rect x="618" y="1030" width="64" height="64" rx="6" fill="#E7157B"/>
+<path d="M650 1049l4 9l10 1l-8 7l3 10l-9 -6l-9 6l3 -10l-8 -7l10 -1z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="650" y="1116" text-anchor="middle" font-size="15" fill="#232F3E">Review analysis</text>
+<text x="650" y="1134" text-anchor="middle" font-size="12.5" fill="#5F6B7A">+ sentiment</text>
+<rect x="868" y="1030" width="64" height="64" rx="6" fill="#E7157B"/>
+<path d="M900 1048q1 11 12 14q-11 3 -12 14q-1 -11 -12 -14q11 -3 12 -14z" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="900" y="1116" text-anchor="middle" font-size="15" fill="#232F3E">Enrichment</text>
+<rect x="1118" y="1030" width="64" height="64" rx="6" fill="#E7157B"/>
+<circle cx="1140" cy="1052" r="2.6" fill="#fff"/><circle cx="1140" cy="1062" r="2.6" fill="#fff"/><circle cx="1140" cy="1072" r="2.6" fill="#fff"/><circle cx="1150" cy="1052" r="2.6" fill="#fff"/><circle cx="1150" cy="1062" r="2.6" fill="#fff"/><circle cx="1150" cy="1072" r="2.6" fill="#fff"/><circle cx="1160" cy="1052" r="2.6" fill="#fff"/><circle cx="1160" cy="1062" r="2.6" fill="#fff"/><circle cx="1160" cy="1072" r="2.6" fill="#fff"/>
+<text x="1150" y="1116" text-anchor="middle" font-size="15" fill="#232F3E">Embeddings</text>
+<path d="M162 520 H260" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<text x="211" y="505" text-anchor="middle" font-size="12.5" fill="#5F6B7A" font-style="italic">REST</text>
+<path d="M480 300 H604" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M480 440 H604" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M480 850 H560 V870 H604" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M480 915 H560 V870" fill="none" stroke="#232F3E" stroke-width="2.2"/>
+<path d="M672 440 H878" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M910 520 V545" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M910 660 V685" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M942 440 H1372 a8 8 0 0 1 16 0 H1526" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M942 580 H1526" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M672 300 H1380 V580" fill="none" stroke="#232F3E" stroke-width="2.2" stroke-dasharray="6 5"/>
+<text x="1030" y="290" text-anchor="middle" font-size="12.5" fill="#5F6B7A" font-style="italic">readiness</text>
+<path d="M672 870 H1422 a8 8 0 0 1 16 0 H1526" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M162 1062 H366" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M432 1062 H618" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M682 1062 H868" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M932 1062 H1118" fill="none" stroke="#232F3E" stroke-width="2.2" marker-end="url(#h)"/>
+<path d="M1182 1062 H1430 V580" fill="none" stroke="#232F3E" stroke-width="2.2"/>
+<text x="1360" y="1050" text-anchor="middle" font-size="12.5" fill="#5F6B7A" font-style="italic">upsert</text>
+<circle cx="1380" cy="580" r="4.5" fill="#232F3E"/><circle cx="1430" cy="580" r="4.5" fill="#232F3E"/>
+<circle cx="211" cy="535" r="15" fill="#232F3E"/><text x="211" y="540.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">1</text>
+<circle cx="775" cy="415" r="15" fill="#232F3E"/><text x="775" y="420.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">2</text>
+<circle cx="1200" cy="415" r="15" fill="#232F3E"/><text x="1200" y="420.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">3</text>
+<circle cx="1200" cy="555" r="15" fill="#232F3E"/><text x="1200" y="560.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">4</text>
+<circle cx="1200" cy="845" r="15" fill="#232F3E"/><text x="1200" y="850.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">5</text>
+<circle cx="1250" cy="1030" r="15" fill="#232F3E"/><text x="1250" y="1035.5" text-anchor="middle" font-size="15" font-weight="700" fill="#fff">6</text></svg>
