@@ -1,0 +1,25 @@
+{
+  "note": "Latency budgets are calibrated to the 2026-10-06 baseline on a CPU-only laptop (normal p95 ~13s, outfit p95 ~17s). They are NOT production targets; tighten them once latency is optimized.",
+  "thresholds": {
+    "error_rate_max": 0.02,
+    "empty_rate_max": 0.05,
+    "latency_p95_ms_max_normal": 15000,
+    "latency_p95_ms_max_outfit": 20000,
+    "category_conformance_min": 0.7,
+    "gender_conformance_min": 0.9,
+    "filter_accuracy_min": 0.9,
+    "outfit_coverage_min": 0.75
+  },
+  "cases": [
+    {"query": "black jeans for men", "gender": "men", "category": "jeans", "color": "black", "title_any": ["jean", "denim"]},
+    {"query": "red dress for women", "gender": "women", "category": "dress", "color": "red", "title_any": ["dress", "gown"]},
+    {"query": "white sneakers", "category": "sneakers", "color": "white", "title_any": ["sneaker", "shoe", "trainer"]},
+    {"query": "formal shirt for men", "gender": "men", "category": "shirt", "title_any": ["shirt"]},
+    {"query": "blue hoodie", "category": "hoodie", "color": "blue", "title_any": ["hoodie", "sweatshirt"]},
+    {"query": "women's black skirt", "gender": "women", "category": "skirt", "color": "black", "title_any": ["skirt"]},
+    {"query": "casual shorts for men", "gender": "men", "category": "shorts", "title_any": ["short"]},
+    {"query": "winter jacket for women", "gender": "women", "category": "jacket", "title_any": ["jacket", "coat", "parka"]},
+    {"query": "an outfit for a wedding", "outfit": true},
+    {"query": "something to wear to a party", "outfit": true}
+  ]
+}

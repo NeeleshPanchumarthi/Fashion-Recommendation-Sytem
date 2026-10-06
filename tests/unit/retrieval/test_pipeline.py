@@ -76,3 +76,32 @@ def test_top_k_is_capped_by_rerank_budget():
     vectors = [product_vector(f"S{i}", f"Shirt {i}", gender="men", category="shirt") for i in range(20)]
     outcome = _pipeline(vectors, rerank_k=4).run("men shirt", top_k=10)
     assert len(outcome.matches) == 4
+
+
+def test_non_fashion_query_stops_before_any_search():
+    vectors = FakePineconeClient(CATALOG)
+    pipeline = RetrievalPipeline(
+        query_processor=QueryProcessor(FakeLLM({"is_fashion": False, "language": "en"})),
+        embedder=FakeEmbedder(),
+        retriever=Retriever(VectorRepository(vectors), dense_k=40),
+        reranker=Reranker(FakeRerankerClient()),
+        rerank_candidates_k=24,
+    )
+    outcome = pipeline.run("wedding venues near me", 10)
+    assert outcome.matches == [] and outcome.message and vectors.queries == []
+
+
+def test_translated_query_is_searched_and_reported():
+    pipeline = RetrievalPipeline(
+        query_processor=QueryProcessor(
+            FakeLLM({"is_fashion": True, "language": "fr", "english_query": "women's wedding heels shoes"})
+        ),
+        embedder=FakeEmbedder(),
+        retriever=Retriever(VectorRepository(FakePineconeClient(CATALOG)), dense_k=40),
+        reranker=Reranker(FakeRerankerClient()),
+        rerank_candidates_k=24,
+    )
+    outcome = pipeline.run("chaussures de mariage pour femme", 10)
+    assert outcome.query == "chaussures de mariage pour femme"
+    assert (outcome.translated_query, outcome.detected_language) == ("women's wedding heels shoes", "fr")
+    assert outcome.matches and {m.product.category for m in outcome.matches} == {"shoes"}

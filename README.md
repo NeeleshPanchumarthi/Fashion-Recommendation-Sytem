@@ -20,19 +20,20 @@
 3. [Demo](#demo)
 4. [Architecture](#architecture)
 5. [Tech Stack](#tech-stack)
-6. [Project Structure](#project-structure)
-7. [Getting Started](#getting-started)
-8. [API Reference](#api-reference)
-9. [Configuration](#configuration)
-10. [Testing](#testing)
-11. [Production Scale Considerations](#production-scale-considerations)
-12. [Additional Exploration](#additional-exploration)
+6. [Dataset](#dataset)
+7. [Project Structure](#project-structure)
+8. [Getting Started](#getting-started)
+9. [API Reference](#api-reference)
+10. [Configuration](#configuration)
+11. [Testing](#testing)
+12. [Production Scale Considerations](#production-scale-considerations)
+13. [Additional Exploration](#additional-exploration)
 
 ---
 
 ## Overview
 
-StyleIQ is a semantic fashion search microservice. It turns a natural-language request such as *"I need a dress for a wedding"* into ranked, relevant products. It does this through query understanding, vector retrieval over Pinecone, and cross-encoder reranking.
+StyleIQ is a semantic fashion search microservice. It turns a natural-language request such as *"I need a dress for a wedding"* into ranked, relevant products. It does this through query understanding, vector retrieval over Pinecone, and cross-encoder reranking. It runs over the Amazon Fashion catalog (about 826K products and 2.5M reviews); see [Dataset](#dataset).
 
 The system has two decoupled processes built from one codebase:
 
@@ -94,6 +95,33 @@ Pinecone is the only runtime handoff between the API and the ingestion worker. F
 | **Frontend** | React 19, TypeScript, Vite, Tailwind CSS 4, Radix UI |
 | **Testing** | Pytest |
 
+## Dataset
+
+StyleIQ searches the **Amazon Fashion** category of the [Amazon Reviews 2023](https://amazon-reviews-2023.github.io/) dataset (McAuley Lab, UCSD).
+
+| File | Rows | Size | Content |
+|---|---|---|---|
+| `data/metadata.parquet` | 826,108 products | ~292 MB | Title, features, description, price, ratings, images, store, plus brand/color/material/occasion details |
+| `data/reviews.parquet` | 2,500,939 reviews | ~396 MB | Rating, title, text, user, timestamp, helpful votes, verified purchase |
+
+Reviews link to products through `parent_asin`.
+
+**Preparation.** The raw dataset ships as `meta_*.jsonl` and review `*.jsonl` files. `scripts/convert_dataset.py` converts them to Parquet:
+
+```bash
+python scripts/convert_dataset.py --dataset-dir /path/to/raw --output-dir data
+```
+
+**How it is used**
+- The ingestion worker reads products in batches and fetches each batch's reviews with DuckDB semi-joins, so the full reviews file is never loaded into memory.
+- The `details` struct supplies filterable attributes such as color, material, occasion, and fit.
+- Product images feed the virtual try-on feature.
+
+**Data characteristics**
+- The `details` field has hundreds of sparse, inconsistent keys, so attributes are normalized against the vocabularies in `app/domain/attributes/vocabularies.py`.
+- Many products lack metadata: only ~6% have a price (50,249) and ~7% have a description (59,289). Nearly all have images, and reviews cover ~825,900 products.
+- The data files are not committed to git. Download the dataset and place the Parquet files in `data/`.
+
 ## Project Structure
 
 ```text
@@ -109,6 +137,7 @@ app/
   repositories/      Pinecone access, parquet/DuckDB dataset access
   clients/           Pinecone, Groq, embedding, reranker, sentiment, try-on
 workers/             Ingestion CLI, batch processor, checkpoint manager
+evals/               Black-box system health evals, golden query set, baseline report
 scripts/             Dataset conversion, index checks, sample data
 tests/               Unit (in-memory fakes) and integration tests
 frontend/            React + Vite client
@@ -192,6 +221,29 @@ pytest                                                # unit + integration, no n
 RUN_LIVE_TESTS=1 pytest tests/integration/vector_db   # against the live Pinecone index
 ```
 
+## System Evals
+
+Tests show the code works. The `evals/` package scores whether the *running* system is healthy and still returns relevant results. It treats the API as a black box and exits non-zero if any threshold fails, so it can gate a release.
+
+```bash
+python -m evals.run --out evals/reports/latest.json
+```
+
+It checks availability, error and empty-result rates, latency (p50/p95), query-understanding accuracy, result relevance, outfit completeness, and clean rejection of bad input, using a labeled golden set of 10 queries (`evals/golden.json`).
+
+**Baseline** (live index of 615,000 vectors, 30 searches, CPU-only laptop):
+
+| Metric | Result |
+|---|---|
+| Error rate / empty results | 0% / 0% |
+| Filter extraction accuracy | 97% |
+| Top-10 category and gender match | 96% / 95% |
+| Outfit coverage (tops, bottoms, footwear, accessories) | 4 of 4 groups |
+| Bad-input handling | 100% clean 4xx |
+| Latency p95 (normal / outfit) | 13.3 s / 17.2 s |
+
+Correctness and reliability pass on every check. Latency budgets are calibrated to this CPU-only baseline rather than production targets, and tightening them is planned work (see Production Scale Considerations). Relevance is judged by title keyword matching, so the labeled nDCG@10 evaluation below remains the next step.
+
 ---
 
 ## Production Scale Considerations
@@ -225,25 +277,24 @@ Beyond the core search and recommendation pipeline, the following capabilities e
 ### 1. Virtual Try-On (Implemented)
 The virtual try-on feature is already implemented. Shoppers can preview a selected garment on their own photo before purchase, which helps them judge fit and appearance. Next steps are to improve output fidelity and reduce generation latency. These build on the production work described above: the asynchronous job queue and horizontally scaled workers.
 
-### 2. Complete Outfit Recommendation
-Extend the recommender from single products to full outfits, such as shirt, pant, shoes, and accessories. Given a shopper's query, occasion, or anchor item, the system would assemble a coordinated set from across product categories. The approach would combine:
+### 2. Outfit Recommendation and Complementary Item Matching
+Extend the recommender from single products to coordinated styling. From a shopper's query, occasion, or anchor item, the system would build a complete outfit (shirt, pant, shoes, and accessories) or complete a partial one. For example, it could suggest a matching shirt for a given pant, a matching pant for a given shirt, or matching shoes for a shirt and pant combination.
+
+The approach would combine:
 - **Category-aware retrieval:** fetch candidates for each outfit slot (top, bottom, footwear, accessories) separately from the vector index.
 - **Compatibility scoring:** rank candidate combinations on color harmony, style and formality consistency, season, and price range, rather than on similarity to the query alone.
+- **Learned compatibility:** learn which items work well together from co-purchase and co-view behavior, alongside embedding-based style similarity and color and formality rules.
+- **Explainable pairings:** use an LLM to reason over item attributes and explain each pairing, such as "navy chinos pair well with this white oxford shirt".
 - **Bundle presentation:** return the outfit as a single set that can be previewed with the try-on feature and added to the cart together.
-
-### 3. Complementary Item Matching
-Support targeted pairing from a single anchor item:
-- A matching shirt for a given pant, or a matching pant for a given shirt.
-- Matching shoes for a given shirt and pant combination.
-
-This relies on a compatibility model that captures which items work well together. Options include:
-- Embedding-based similarity on style attributes, combined with rules for color and formality.
-- Learning compatibility from co-purchase and co-view behavior.
-- Using an LLM to reason over item attributes and explain each pairing, such as "navy chinos pair well with this white oxford shirt".
 
 The structured category taxonomy and extracted attributes from the data-quality work in the previous section are prerequisites. They give the matching logic clean, comparable features to work with.
 
+### 3. Visual Search by Image Upload
+Let shoppers search with a photo instead of text. When a shopper uploads an image, such as a street-style photo, a screenshot, or a garment they already own, the system finds visually similar products in the catalog and returns them. The approach would combine:
+- **Image embeddings:** encode the uploaded image with a vision-language model such as CLIP or SigLIP. Index product images in the same embedding space, so image-to-product similarity search works in Pinecone.
+- **Attribute detection:** detect the garment type, color, and pattern in the upload, and use them as filters to narrow results to the right category.
+- **Hybrid ranking:** combine visual similarity with the existing text and metadata signals, and rerank the top candidates for precision.
+- **Seamless follow-up:** let shoppers try on a matched item or ask for items that go with it, which links this capability to the outfit matching above.
+
 ---
 
-## License
-*To be added.*

@@ -61,6 +61,13 @@ export default function SearchResults() {
         </div>
       )}
 
+      {data?.message && (
+        <div className="mb-8 flex items-center gap-2 border-l-2 border-brand-600 bg-neutral-50 px-4 py-3 text-sm text-neutral-700">
+          <AlertCircle className="size-4 shrink-0 text-brand-600" />
+          {data.message}
+        </div>
+      )}
+
       <div className="mb-10">
         <p className="text-[11px] uppercase tracking-[0.25em] text-neutral-400">
           {!query ? "Search" : loading ? "Searching" : `${filtered.length} result${filtered.length === 1 ? "" : "s"}`}
@@ -68,6 +75,9 @@ export default function SearchResults() {
         <h1 className="mt-2 font-display text-3xl leading-tight text-ink sm:text-4xl">
           {query ? query : "What are you looking for?"}
         </h1>
+        {data?.translated_query && (
+          <p className="mt-2 text-sm text-neutral-500">Showing results for &ldquo;{data.translated_query}&rdquo;</p>
+        )}
         <div className="mt-6 flex items-center justify-between gap-4 border-b border-neutral-200 pb-3">
           <CategoryTabs value={tab} onChange={(t) => go(query, t)} counts={counts} />
           <button

@@ -71,6 +71,12 @@ class QueryUnderstanding:
     # Extracted but not used as filters (price isn't stored in the index).
     price_min: Optional[float] = None
     price_max: Optional[float] = None
+    # Query guard: False means "not a fashion question" -- don't search.
+    is_fashion: bool = True
+    message: Optional[str] = None            # shown to the user when refused
+    detected_language: Optional[str] = None  # None when the LLM wasn't consulted
+    # English text searched, set only when it differs from the user's query.
+    translated_query: Optional[str] = None
 
 
 @dataclass
@@ -78,3 +84,8 @@ class SearchOutcome:
     query: str
     matches: list[ProductMatch]
     applied_filters: dict
+    detected_language: Optional[str] = None
+    # English text actually searched, set only when it differs from `query`.
+    translated_query: Optional[str] = None
+    # Set instead of results when the query was refused (not about fashion).
+    message: Optional[str] = None

@@ -20,6 +20,10 @@ export type GarmentType = "upper_body" | "lower_body" | "dresses"
 export interface SearchResponse {
   query: string
   detected_language?: string | null
+  // English text actually searched; null when the query was already English.
+  translated_query?: string | null
+  // Set (with empty results) when the query isn't fashion-related.
+  message?: string | null
   // Applied filters, e.g. { gender: "women", color: "red", min_rating: 4 }.
   // size CAN appear here (it's used server-side for filtering) even though
   // individual products in `results` don't carry a size field. Price never

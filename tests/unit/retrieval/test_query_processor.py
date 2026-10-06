@@ -15,7 +15,8 @@ def test_query_gender_cues():
 
 
 def test_regex_wins_and_llm_fills_gaps():
-    llm = FakeLLM({"category": "jeans", "color": "green", "style": "casual", "expanded_query": "casual blue jeans"})
+    llm = FakeLLM({"is_fashion": True, "category": "jeans", "color": "green", "style": "casual",
+                  "expanded_query": "casual blue jeans"})
     result = QueryProcessor(llm).process("blue jeans under 50")
 
     assert result.filters == SearchFilters(category="jeans", color="blue", style="casual")
@@ -25,7 +26,7 @@ def test_regex_wins_and_llm_fills_gaps():
 
 
 def test_llm_values_outside_vocabulary_are_discarded():
-    result = QueryProcessor(FakeLLM({"color": "chartreuse-ish", "gender": "WOMEN"})).process("something nice")
+    result = QueryProcessor(FakeLLM({"is_fashion": True, "color": "chartreuse-ish", "gender": "WOMEN"})).process("something nice")
     assert result.filters == SearchFilters(gender="women")
 
 
