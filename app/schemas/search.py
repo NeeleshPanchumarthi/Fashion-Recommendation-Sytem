@@ -64,6 +64,10 @@ class SearchResult(BaseModel):
 class SearchResponse(BaseModel):
     query: str = Field(..., description="Original user query string")
     detected_language: Optional[str] = Field(None, description="ISO language code detected from the query")
+    translated_query: Optional[str] = Field(
+        None, description="English translation that was actually searched; null if the query was already English"
+    )
+    message: Optional[str] = Field(None, description="Set (with empty results) when the query isn't fashion-related")
     filters: Optional[dict] = Field(None, description="Filters applied, e.g. {'gender': 'women', 'color': 'red'}")
     results: List[SearchResult] = Field(..., description="Ranked products")
 
@@ -71,6 +75,9 @@ class SearchResponse(BaseModel):
     def from_outcome(cls, outcome: SearchOutcome) -> "SearchResponse":
         return cls(
             query=outcome.query,
+            detected_language=outcome.detected_language,
+            translated_query=outcome.translated_query,
+            message=outcome.message,
             filters=outcome.applied_filters or None,
             results=[SearchResult.from_match(m) for m in outcome.matches],
         )
