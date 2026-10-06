@@ -297,3 +297,5 @@ Let shoppers search with a photo instead of text. When a shopper uploads an imag
 
 ---
 
+#   F a s h i o n - R e c o m m e n d e r - S y s t e m  
+ 
