@@ -1,0 +1,550 @@
+{
+  "timestamp": "2026-10-06T01:40:48",
+  "metrics": {
+    "liveness_ok": true,
+    "readiness_ok": true,
+    "error_rate": 0.0,
+    "empty_rate": 0.0,
+    "network_flakes": 0,
+    "latency_p50_ms": 5742,
+    "latency_p95_ms": 17153,
+    "filter_accuracy": 1.0,
+    "category_conformance": 1.0,
+    "gender_conformance": 1.0,
+    "outfit_coverage": 1.0,
+    "robustness_pass_rate": 1.0,
+    "request_id_present_rate": 1.0,
+    "latency_p95_ms_normal": 13299,
+    "latency_p95_ms_outfit": 17153
+  },
+  "probes": {
+    "liveness": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "status": "ok",
+        "service": "styleiq"
+      }
+    },
+    "readiness": {
+      "ok": true,
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "service": "styleiq",
+        "checks": {
+          "embedding_model": {
+            "ok": true
+          },
+          "reranker_model": {
+            "ok": true
+          },
+          "vector_db": {
+            "ok": true,
+            "index": "fashionvectors",
+            "vector_count": 615000
+          },
+          "llm": {
+            "ok": true,
+            "enabled": true,
+            "required": false
+          }
+        }
+      }
+    }
+  },
+  "robustness": [
+    {
+      "name": "empty_query",
+      "status": 400,
+      "ok": true
+    },
+    {
+      "name": "overlong_query",
+      "status": 422,
+      "ok": true
+    },
+    {
+      "name": "zero_top_k",
+      "status": 422,
+      "ok": true
+    }
+  ],
+  "cases": [
+    {
+      "query": "black jeans for men",
+      "latency_ms": 8658.06639999937,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "black jeans for men",
+      "latency_ms": 13299.321200000122,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "black jeans for men",
+      "latency_ms": 12005.812500000502,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "red dress for women",
+      "latency_ms": 6282.768299999589,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "red dress for women",
+      "latency_ms": 3174.8358999993798,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "red dress for women",
+      "latency_ms": 4287.229900000057,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "white sneakers",
+      "latency_ms": 9147.451299999375,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "white sneakers",
+      "latency_ms": 5147.472499999822,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "white sneakers",
+      "latency_ms": 8115.747200000442,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "formal shirt for men",
+      "latency_ms": 4033.4213000005548,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "formal shirt for men",
+      "latency_ms": 2518.1366000006165,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "formal shirt for men",
+      "latency_ms": 3472.674000000552,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "blue hoodie",
+      "latency_ms": 5741.906400000516,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "blue hoodie",
+      "latency_ms": 6513.475100000505,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "blue hoodie",
+      "latency_ms": 7097.56759999982,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "women's black skirt",
+      "latency_ms": 5195.608600000014,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "women's black skirt",
+      "latency_ms": 4312.4327000005,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "women's black skirt",
+      "latency_ms": 4564.650100000108,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 3,
+      "filter_total": 3,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "casual shorts for men",
+      "latency_ms": 3957.8763999998046,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "casual shorts for men",
+      "latency_ms": 4013.7329999997746,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "casual shorts for men",
+      "latency_ms": 3755.4739999995945,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "winter jacket for women",
+      "latency_ms": 4018.7244999997347,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "winter jacket for women",
+      "latency_ms": 3854.4024000002537,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "winter jacket for women",
+      "latency_ms": 23329.544199999873,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "filter_hits": 2,
+      "filter_total": 2,
+      "category_conformance": 1.0,
+      "gender_conformance": 1.0,
+      "outfit": false
+    },
+    {
+      "query": "an outfit for a wedding",
+      "latency_ms": 15218.578800000614,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    },
+    {
+      "query": "an outfit for a wedding",
+      "latency_ms": 12515.575000000354,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    },
+    {
+      "query": "an outfit for a wedding",
+      "latency_ms": 8339.563800000178,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    },
+    {
+      "query": "something to wear to a party",
+      "latency_ms": 11801.274800000101,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    },
+    {
+      "query": "something to wear to a party",
+      "latency_ms": 15375.295999999253,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    },
+    {
+      "query": "something to wear to a party",
+      "latency_ms": 17153.213100000357,
+      "status": 200,
+      "flakes": 0,
+      "error": false,
+      "empty": false,
+      "n_results": 10,
+      "request_id_present": true,
+      "outfit_groups": [
+        "footwear",
+        "accessories",
+        "tops",
+        "bottoms"
+      ],
+      "outfit_coverage": 1.0,
+      "outfit": true
+    }
+  ],
+  "verdicts": {
+    "liveness_ok": true,
+    "readiness_ok": true,
+    "error_rate": true,
+    "empty_rate": true,
+    "latency_p95_ms_normal": true,
+    "latency_p95_ms_outfit": true,
+    "filter_accuracy": true,
+    "category_conformance": true,
+    "gender_conformance": true,
+    "outfit_coverage": true,
+    "robustness_pass_rate": true
+  }
+}

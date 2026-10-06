@@ -1,7 +1,9 @@
 """The search retrieval pipeline.
 
     query
-      → query processing (regex + LLM, outfit detection)   query_processor.py
+      → query processing: ONE LLM call (fashion guard + translate to
+        English + attributes), regex, outfit detection        query_processor.py
+        (not fashion: return a message and stop here)
       → plan searches: gender pools × outfit groups         retriever.py
       → query embedding(s), one batched call                embedding_client.py
       → dense searches, run in parallel                     retriever.py
@@ -70,6 +72,11 @@ class RetrievalPipeline:
         started = time.perf_counter()
 
         understanding = self._query_processor.process(query)
+        if not understanding.is_fashion:
+            return SearchOutcome(
+                query=query, matches=[], applied_filters={},
+                detected_language=understanding.detected_language, message=understanding.message,
+            )
         outfit = understanding.outfit
 
         plan = plan_subqueries(understanding.filters, outfit)
@@ -128,4 +135,7 @@ class RetrievalPipeline:
             outfit, len(plan), dense_k or self._retriever.dense_k, reranked_count, len(final), applied,
             (searched - started) * 1000, (time.perf_counter() - started) * 1000,
         )
-        return SearchOutcome(query=query, matches=final, applied_filters=applied)
+        return SearchOutcome(
+            query=query, matches=final, applied_filters=applied,
+            detected_language=understanding.detected_language, translated_query=understanding.translated_query,
+        )

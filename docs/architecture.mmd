@@ -1,59 +1,47 @@
-
 flowchart LR
-  subgraph CL["Client"]
-    UI["React + Vite SPA<br/>search, filters, try-on dialog"]
-  end
-
-  subgraph API["API process: uvicorn app.main:app"]
-    MW["Middleware<br/>CORS, X-Request-ID, error handler"]
-    RT["Routers /api<br/>health, ready, search, try-on"]
-    HS["HealthService"]
-    SS["SearchService"]
-    TS["TryOnService<br/>photo prep, in-memory jobs, thread pool"]
-
-    subgraph RP["Retrieval pipeline"]
-      QP["QueryProcessor<br/>regex first, LLM fills gaps"]
-      EMB["EmbeddingClient<br/>SentenceTransformer, local"]
-      RET["Retriever<br/>gender pools, outfit groups,<br/>filter relaxation"]
-      RR["Reranker + RerankerClient<br/>cross-encoder, local"]
+    subgraph Client
+        UI[React + Vite frontend]
     end
 
-    VR["VectorRepository<br/>Pinecone schema + filters"]
-    PCL["PineconeClient"]
-    LLMC["LLMClient"]
-    TCL["TryOnClient<br/>Gradio API"]
-  end
+    subgraph API["FastAPI service"]
+        subgraph EP["API endpoints /api"]
+            E1["GET /health"]
+            E2["GET /ready"]
+            E3["POST /search"]
+            E4["POST /try-on"]
+            E5["GET /try-on/#123;job_id#125;"]
+        end
 
-  subgraph WK["Ingestion worker: python -m workers.ingestion_worker (offline, resumable)"]
-    DR["DatasetRepository<br/>DuckDB"]
-    BP["BatchProcessor"]
-    RA["ReviewAnalysisService<br/>SentimentClient, local BERT"]
-    EN["Product enrichment<br/>attribute extractors, combined text"]
-    EMB2["EmbeddingClient"]
-    VR2["VectorRepository<br/>upsert with retry"]
-    CK["CheckpointManager<br/>state + failure log"]
-  end
+        HS[Health service]
+        S[Search service]
 
-  DS[("metadata.parquet<br/>reviews.parquet")]
-  PC[("Pinecone index")]
-  GQ["Groq LLM"]
-  HF["Hugging Face Space<br/>Leffa try-on"]
+        subgraph RP["Retrieval"]
+            QP[Query processor<br/>regex + LLM]
+            RT[Retriever<br/>gender pools · relaxation]
+            RR[Cross-encoder reranker]
 
-  UI -->|"POST /api/search"| MW
-  UI -->|"POST /api/try-on, poll GET /api/try-on/id"| MW
-  MW --> RT
-  RT --> SS
-  RT --> TS
-  RT --> HS
-  SS --> QP
-  QP --> EMB
-  EMB --> RET
-  RET --> RR
-  QP --> LLMC --> GQ
-  RET --> VR --> PCL --> PC
-  TS --> TCL --> HF
-  HS -.->|"readiness checks"| VR
+            QP --> RT --> RR
+        end
 
-  DS --> DR --> BP
-  BP --> RA --> EN --> EMB2 --> VR2 --> PC
-  BP <--> CK
+        TO[Try-on service<br/>async jobs]
+
+        E2 --> HS
+        E3 --> S --> QP
+        E4 --> TO
+        E5 --> TO
+    end
+
+    subgraph Worker["Ingestion worker (offline)"]
+        W[Batch processor] --> RA[Review analysis<br/>+ sentiment]
+        RA --> EN[Enrichment] --> EM[Embeddings]
+    end
+
+    UI -->|REST| EP
+    HS -.->|readiness| PC
+
+    RT --> PC[(Pinecone)]
+    QP --> GQ[Groq LLM]
+    TO --> HF[Hugging Face Space<br/>Leffa]
+
+    DS[(Parquet dataset<br/>via DuckDB)] --> W
+    EM -->|upsert| PC
